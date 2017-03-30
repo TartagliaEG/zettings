@@ -1,16 +1,20 @@
 import {Source} from './zettings';
 import * as _ from 'lodash';
+import * as Path from 'path';
+import * as OS from 'os';
 
-export class JsonSource implements Source {
+export default class JsonSource implements Source {
   public readonly name: string;  
   private readonly json: Object = {};
 
-  constructor(options: JsonOptions) {    
-    this.name = options.name || 'JSON';
+  constructor(options: JsonOptions) {        
+    this.name = options.name || 'JSON';    
+    options.pwd = options.pwd === undefined ? '' : options.pwd;
+    options.pwd = options.pwd === '$HOME' ? OS.homedir() : options.pwd;
 
     options.paths.forEach((path) => {
       try {
-        _.merge(this.json, require(path));
+        _.merge(this.json, require( Path.join(options.pwd, path) ));
       } catch (err) {
         console.error("No valid json found at '" + path + "'", err);
         throw err;
@@ -26,6 +30,8 @@ export class JsonSource implements Source {
 
 export interface JsonOptions {
   name?: string,
-  profile?: string,
-  paths: string[]
+  /** Specifies a list of json locations to be merged. **/
+  paths: string[],
+  /** Specifies the working directory from which the paths will be relative to **/
+  pwd?: string | '$HOME'
 }

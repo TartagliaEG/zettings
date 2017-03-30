@@ -1,5 +1,4 @@
 import EnvSource from './env-source';
-import {JsonSource} from './json-source';
 import MemorySource from './memory-source';
 import Logger from './simple-logger';
 

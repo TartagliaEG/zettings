@@ -8,7 +8,7 @@ setLoggerLevel(LVL_NONE);
 
 describe("EnvSource", function() {
   
-  it("Assert that, by default, keys are joined by underscore and changed to upper case.", function() {
+  it("Assert that, by default, keys are joined by underscore and toUpperCase is called.", function() {
     const env: EnvSource = new EnvSource();
     process.env.TEST_KEY = "1";
     expect(env.get(["test", "key"])).to.be.equals("1");
@@ -16,7 +16,7 @@ describe("EnvSource", function() {
   });
 
 
-  it("Change the default key separator", function() {
+  it("Assert that changing the key separator has the expected effect.", function() {
     const env: EnvSource = new EnvSource({separator: '3'});
     process.env.TEST3KEY = "1";
     expect(env.get(["test", "key"])).to.be.equals("1");
@@ -24,7 +24,7 @@ describe("EnvSource", function() {
   });
 
 
-  it("Change the default letter case", function() {
+  it("Assert that changing the the default letter case has the expected effect.", function() {
     const env1: EnvSource = new EnvSource({letterCase: "lower"});    
     process.env.test_key = "1";
     expect(env1.get(["test", "key"])).to.be.equals("1");
@@ -37,7 +37,7 @@ describe("EnvSource", function() {
   });
 
 
-  it("Set a default prefix", function() {
+  it("Assert that the prefix will be applied.", function() {
     const env: EnvSource = new EnvSource({prefix: "custom"});
     process.env.CUSTOM_TEST_KEY = "1";
     expect(env.get(["test", "key"])).to.be.equals("1");
@@ -45,7 +45,7 @@ describe("EnvSource", function() {
   });
 
 
-  it("Set custom name", function() {
+  it("Assert that the custom name will be used.", function() {
     const env: EnvSource = new EnvSource({name: "custom name"});    
     expect(env.name).to.be.equals("custom name");
   });

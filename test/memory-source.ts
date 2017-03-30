@@ -6,9 +6,9 @@ import {setLoggerLevel, LVL_NONE} from '../src/simple-logger';
 
 setLoggerLevel(LVL_NONE);
 
-describe("EnvSource", function() {
+describe("MemorySource", function() {
   
-  it(".get & .set", function() {
+  it("Assert that #get and #set works as expected.", function() {
     const mem: MemSource = new MemSource();
     expect(mem.get(['a','key'])).to.be.not.ok;
 
@@ -17,7 +17,7 @@ describe("EnvSource", function() {
   });
 
 
-  it("Set custom name", function() {
+  it("Assert that the custom name will be used.", function() {
     const mem: MemSource = new MemSource({name: "custom name"});        
     expect(mem.name).to.be.equals("custom name");
   });

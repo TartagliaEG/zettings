@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "grunt start",
-    "test": "mocha .dist/test"
+    "test": "mocha .dist/test",
+    "build": "grunt build",
+    "watch": "grunt buildAndWatch"
   },
   "keywords": [],
   "author": "",

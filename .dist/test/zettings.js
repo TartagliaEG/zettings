@@ -90,18 +90,16 @@ describe("Zettings", function () {
             chai_1.expect(() => { Z.set('key', 'value'); }).to.throw(Error);
         });
     });
-    describe("defaults", function () {
-        it('Assert that there are default sources configured.', function () {
-            const Z = new zettings_1.default({});
-            chai_1.expect(Z.count()).to.be.greaterThan(0);
+    it('Assert that there are default sources configured.', function () {
+        const Z = new zettings_1.default({});
+        chai_1.expect(Z.count()).to.be.greaterThan(0);
+    });
+    it("Assert that default sources can be disabled.", function () {
+        const Z = new zettings_1.default({
+            defaultEnvSource: false,
+            defaultMemoSource: false,
         });
-        it("Disable default sources.", function () {
-            const Z = new zettings_1.default({
-                defaultEnvSource: false,
-                defaultMemoSource: false
-            });
-            chai_1.expect(Z.count()).to.be.equals(0);
-        });
+        chai_1.expect(Z.count()).to.be.equals(0);
     });
 });
 //# sourceMappingURL=zettings.js.map

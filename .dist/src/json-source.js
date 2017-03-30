@@ -1,13 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
+const Path = require("path");
+const OS = require("os");
 class JsonSource {
     constructor(options) {
         this.json = {};
         this.name = options.name || 'JSON';
+        options.pwd = options.pwd === undefined ? '' : options.pwd;
+        options.pwd = options.pwd === '$HOME' ? OS.homedir() : options.pwd;
         options.paths.forEach((path) => {
             try {
-                _.merge(this.json, require(path));
+                _.merge(this.json, require(Path.join(options.pwd, path)));
             }
             catch (err) {
                 console.error("No valid json found at '" + path + "'", err);
@@ -19,5 +23,5 @@ class JsonSource {
         return _.get(this.json, keys);
     }
 }
-exports.JsonSource = JsonSource;
+exports.default = JsonSource;
 //# sourceMappingURL=json-source.js.map

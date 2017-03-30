@@ -41,6 +41,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks("grunt-contrib-watch");  
   
   grunt.registerTask("build", ["ts:fullCompile"]);
-  grunt.registerTask("setup", ["build", "copy:src", "copy:test", "watch"]);  
+  grunt.registerTask("buildAndWatch", ["build", "copy:src", "copy:test", "watch"]);  
 
 };

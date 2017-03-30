@@ -129,23 +129,22 @@ describe("Zettings", function() {
     });
   });  
 
-
-  describe("defaults", function() {
-    it('Assert that there are default sources configured.', function() {
-      const Z = new Zettings({});
-      expect(Z.count()).to.be.greaterThan(0);
-    });
-
-
-    it("Disable default sources.", function() {
-      const Z = new Zettings({
-        defaultEnvSource: false,
-        defaultMemoSource: false
-      });
-
-      expect(Z.count()).to.be.equals(0);
-    });
+  
+  it('Assert that there are default sources configured.', function() {
+    const Z = new Zettings({});
+    expect(Z.count()).to.be.greaterThan(0);
   });
+
+
+  it("Assert that default sources can be disabled.", function() {
+    const Z = new Zettings({
+      defaultEnvSource: false,
+      defaultMemoSource: false,
+    });
+
+    expect(Z.count()).to.be.equals(0);
+  });
+  
 
 });
 

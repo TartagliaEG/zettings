@@ -31,10 +31,13 @@ export default class EnvSource implements Source {
 }
 
 
-export interface EnvOptions {
+export interface EnvOptions {  
   name?: string;
+  /** Specifies the letter case applied to all keys. Defaults to 'upper' **/
   letterCase?: LetterCase;
+  /** Specifies the key separator. Defaults to '_' **/
   separator?: string;  
+  /** Specifies a prefix to be used in all keys. Defaults to '' **/
   prefix?: string;
 }
 
