@@ -1,0 +1,31 @@
+{
+  "name": "zettings",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "grunt start",
+    "test": "mocha .dist/test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/chai": "^3.4.35",
+    "@types/lodash": "^4.14.58",
+    "@types/mocha": "^2.2.40",
+    "@types/node": "^7.0.12",
+    "@types/sinon": "^2.1.0",
+    "chai": "^3.5.0",
+    "grunt": "^1.0.1",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-ts": "^6.0.0-beta.15",
+    "mocha": "^3.2.0",
+    "sinon": "^2.1.0",
+    "typescript": "^2.2.2"
+  },
+  "dependencies": {
+    "lodash": "^4.17.4"
+  }
+}
