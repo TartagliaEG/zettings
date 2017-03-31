@@ -1,4 +1,4 @@
-import {Source} from './zettings';
+import {Source} from '../zettings';
 import * as _ from 'lodash';
 import * as Path from 'path';
 import * as OS from 'os';

@@ -1,4 +1,4 @@
-import {Source} from './zettings';
+import {Source} from '../zettings';
 import * as _ from 'lodash';
 
 export default class MemorySource implements Source {

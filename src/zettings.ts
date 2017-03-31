@@ -1,10 +1,9 @@
-import EnvSource from './env-source';
-import MemorySource from './memory-source';
-import Logger from './simple-logger';
-
+import EnvSource from './sources/src-env';
+import MemorySource from './sources/src-memory';
+import Logger from './utils/simple-logger';
+import TrFunction from './value-transformations/tr-function';
 
 const Log = new Logger('Zettings');
-
 
 export interface Source {
   readonly name: string;
@@ -49,6 +48,17 @@ export interface Options {
    * default - 1
    */
   defaultMemoSourcePriority?: number;
+
+  /**
+   * Specified if the default function transformation will be used
+   * default - true
+   */
+  defaultTrFunction?: boolean;
+
+  /**
+   * Specify the working directory
+   */
+  pwd: string
   
 }
 
@@ -60,11 +70,33 @@ interface PrioritySource {
 }
 
 
+export interface ValueTransformation {
+  /**
+   * Name used mainly to log info
+   */
+  readonly name: string;
+
+  /**
+   * The pattern that defines if this transformation will be applied
+   */
+  readonly pattern: RegExp;
+
+  /**
+   * The transformation function
+   */
+  transform(value: any): any
+}
+
+
 export default class Zettings {
   readonly DEF_PROFILE: string = 'DEFAULT_PROFILE';
+  private pwd: string;
 
   /** List of configured Sources **/
   private sources: PrioritySource[] = [];
+
+  /** List of value transformations to be applied each time the get is called */
+  private transformations: ValueTransformation[] = [];
 
   /** Current active profile **/
   private profile: string;
@@ -81,13 +113,14 @@ export default class Zettings {
   /**
    * @see Options
    */
-  constructor(options?: Options) {
-    options = options || {};
+  constructor(options: Options) {    
     this.profile = options.profile || this.DEF_PROFILE;
 
     this.lowestPriority = 0;
     options.defaultMemoSource = getFirstValid(options.defaultMemoSource, true);    
-    options.defaultEnvSource  = getFirstValid(options.defaultEnvSource, true);
+    options.defaultEnvSource  = getFirstValid(options.defaultEnvSource,  true);
+    options.defaultTrFunction = getFirstValid(options.defaultTrFunction, true);
+    this.pwd = options.pwd;
 
     let memoPriority = getFirstValid(options.defaultMemoSourcePriority, 1);
     let envPriority  = getFirstValid(options.defaultEnvSourcePriority,  5);
@@ -97,6 +130,19 @@ export default class Zettings {
     
     if (options.defaultEnvSource)
       this.addSource(new EnvSource(), envPriority, this.profile);
+
+    if (options.defaultTrFunction)
+      this.addTransformation(new TrFunction({pwd: this.pwd}));      
+  }
+
+
+  /** 
+   * Add a ValueTransformation to be applied each time the #get function is called.
+   * 
+   * @param {ValueTransformation} transformation - The transformation instance.
+   **/
+  public addTransformation(transformation: ValueTransformation): void {
+    this.transformations.push(transformation);
   }
 
 
@@ -217,6 +263,7 @@ export default class Zettings {
    */
   public get(key: string, def?: any): any {
     let keys = key.replace(/]/g, '').split(/[\[.]/g);
+    let result: any;
 
     for(let i = 0; i < this.sources.length; i++) {
       const prioritySource = this.sources[i];
@@ -230,10 +277,22 @@ export default class Zettings {
       if (value === undefined)
         continue;
       
-      return value;
+      result = value;
+      break;
     }
 
-    return def;
+    result = result === undefined ? def : result;
+
+    this.transformations.some((transformation) => {
+      if (transformation.pattern.test(result)) {
+        result = transformation.transform(result);
+        return true;
+      }
+
+      return false;
+    });
+
+    return result;
   }
     
   

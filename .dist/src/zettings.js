@@ -1,26 +1,34 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const env_source_1 = require("./env-source");
-const memory_source_1 = require("./memory-source");
-const simple_logger_1 = require("./simple-logger");
+const src_env_1 = require("./sources/src-env");
+const src_memory_1 = require("./sources/src-memory");
+const simple_logger_1 = require("./utils/simple-logger");
+const tr_function_1 = require("./value-transformations/tr-function");
 const Log = new simple_logger_1.default('Zettings');
 class Zettings {
     constructor(options) {
         this.DEF_PROFILE = 'DEFAULT_PROFILE';
         this.sources = [];
+        this.transformations = [];
         this.nameKeys = {};
         this.counter = { total: 0 };
-        options = options || {};
         this.profile = options.profile || this.DEF_PROFILE;
         this.lowestPriority = 0;
         options.defaultMemoSource = getFirstValid(options.defaultMemoSource, true);
         options.defaultEnvSource = getFirstValid(options.defaultEnvSource, true);
+        options.defaultTrFunction = getFirstValid(options.defaultTrFunction, true);
+        this.pwd = options.pwd;
         let memoPriority = getFirstValid(options.defaultMemoSourcePriority, 1);
         let envPriority = getFirstValid(options.defaultEnvSourcePriority, 5);
         if (options.defaultMemoSource)
-            this.addSource(new memory_source_1.default({}), memoPriority, this.profile);
+            this.addSource(new src_memory_1.default({}), memoPriority, this.profile);
         if (options.defaultEnvSource)
-            this.addSource(new env_source_1.default(), envPriority, this.profile);
+            this.addSource(new src_env_1.default(), envPriority, this.profile);
+        if (options.defaultTrFunction)
+            this.addTransformation(new tr_function_1.default({ pwd: this.pwd }));
+    }
+    addTransformation(transformation) {
+        this.transformations.push(transformation);
     }
     addSource(source, priority, profile) {
         if (priority === undefined && profile === undefined) {
@@ -64,6 +72,7 @@ class Zettings {
     }
     get(key, def) {
         let keys = key.replace(/]/g, '').split(/[\[.]/g);
+        let result;
         for (let i = 0; i < this.sources.length; i++) {
             const prioritySource = this.sources[i];
             const source = prioritySource.source;
@@ -72,9 +81,18 @@ class Zettings {
             const value = source.get(keys);
             if (value === undefined)
                 continue;
-            return value;
+            result = value;
+            break;
         }
-        return def;
+        result = result === undefined ? def : result;
+        this.transformations.some((transformation) => {
+            if (transformation.pattern.test(result)) {
+                result = transformation.transform(result);
+                return true;
+            }
+            return false;
+        });
+        return result;
     }
     getf(key, def) {
         const value = this.get(key, def);

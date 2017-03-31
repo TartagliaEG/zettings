@@ -1,8 +1,8 @@
 import {expect} from "chai";
 import {stub, spy, SinonStub} from "sinon";
-import MemSource from "../src/memory-source";
-import {Options, Source} from "../src/zettings";
-import {setLoggerLevel, LVL_NONE} from '../src/simple-logger';
+import MemSource from "../../src/sources/src-memory";
+import {Options, Source} from "../../src/zettings";
+import {setLoggerLevel, LVL_NONE} from '../../src/utils/simple-logger';
 
 setLoggerLevel(LVL_NONE);
 

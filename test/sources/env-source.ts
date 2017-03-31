@@ -1,8 +1,8 @@
 import {expect} from "chai";
 import {stub, spy, SinonStub} from "sinon";
-import EnvSource from "../src/env-source";
-import {Options, Source} from "../src/zettings";
-import {setLoggerLevel, LVL_NONE} from '../src/simple-logger';
+import EnvSource from "../../src/sources/src-env";
+import {Options, Source} from "../../src/zettings";
+import {setLoggerLevel, LVL_NONE} from '../../src/utils/simple-logger';
 
 setLoggerLevel(LVL_NONE);
 

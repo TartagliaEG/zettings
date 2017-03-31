@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "grunt start",
-    "test": "mocha .dist/test",
+    "test":  "mocha --recursive .dist/test",
     "build": "grunt build",
-    "watch": "grunt buildAndWatch"
+    "watch": "grunt buildAndWatch",
+    "btest": "grunt build && mocha --recursive .dist/test"
   },
   "keywords": [],
   "author": "",

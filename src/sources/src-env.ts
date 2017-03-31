@@ -1,4 +1,4 @@
-import {Source} from './zettings';
+import {Source} from '../zettings';
 
 export default class EnvSource implements Source {
   public readonly name: string;

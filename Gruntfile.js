@@ -40,7 +40,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks("grunt-contrib-copy");
   grunt.loadNpmTasks("grunt-contrib-watch");  
   
-  grunt.registerTask("build", ["ts:fullCompile"]);
+  grunt.registerTask("build", ["ts:fullCompile", "copy:src", "copy:test"]);
   grunt.registerTask("buildAndWatch", ["build", "copy:src", "copy:test", "watch"]);  
 
 };

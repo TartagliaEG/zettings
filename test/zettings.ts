@@ -2,16 +2,16 @@ import {expect} from "chai";
 import {stub, spy, SinonStub} from "sinon";
 import Zettings from "../src/zettings";
 import {Options, Source} from "../src/zettings";
-import {setLoggerLevel, LVL_NONE} from '../src/simple-logger';
+import {setLoggerLevel, LVL_NONE} from '../src/utils/simple-logger';
 
 setLoggerLevel(LVL_NONE);
-
+const pwd = {pwd: ''};
 
 describe("Zettings", function() {
 
-  describe(".addSource & .count", function() {
+  describe(".addSource & .count & .addTransformation", function() {
     it("Assert that source names are unique per profile.", function() {
-      const Z = new Zettings();
+      const Z = new Zettings(pwd);
       const mock: Source = { get: (key: string[]): any => {return 1;}, name: "mock" };
 
       Z.addSource(mock);    
@@ -23,7 +23,7 @@ describe("Zettings", function() {
 
 
     it("Assert that the keyword 'total' can't be used as a profile", function() {
-      const Z = new Zettings();
+      const Z = new Zettings(pwd);
       const mock: Source = { get: (key: string[]): any => {return 1;}, name: "mock" };
 
       expect(() => {Z.addSource(mock, 'total')}).to.throw(Error);
@@ -31,7 +31,7 @@ describe("Zettings", function() {
 
 
     it("Assert that #count works per profile.", function() {    
-      const Z = new Zettings();    
+      const Z = new Zettings(pwd);    
       const count = Z.count();
       const mock1: Source = {name: "1", get: (a:string[]) => null};
       const mock2: Source = {name: "2", get: (a:string[]) => null};
@@ -46,12 +46,22 @@ describe("Zettings", function() {
       Z.addSource(mock3);
       expect(Z.count()).to.be.equals(count + 3);
     });
+
+
+    it("Assert that #addValueTransformation is being applied on #get", function() {
+      const Z = new Zettings(pwd);
+      Z.addTransformation({name: "any", pattern: /value/i, transform: () => 'ok'});
+      Z.addSource({get:() => "value", name: 'any'});
+      expect(Z.get('-')).to.be.equals('ok');
+    });    
+
   });
+
 
   describe(".get & .getf & .set", function() {
 
     it("Assert that the source's #get method receives the key as a token array.", function() {
-      const Z = new Zettings();
+      const Z = new Zettings(pwd);
       const mock: Source = { get: (key: string[]): any => {return 1;}, name: "mock" };
 
       const spGet = spy(mock, "get");
@@ -65,7 +75,7 @@ describe("Zettings", function() {
 
 
     it("Assert that sources with no matching profiles won't be used to retrieve values.", function() {
-      const Z = new Zettings();
+      const Z = new Zettings(pwd);
       const mock1: Source = { get: (key: string[]): any => {return 1;}, name: "1" };
       const mock2: Source = { get: (key: string[]): any => {return 2;}, name: "2" };
 
@@ -87,7 +97,7 @@ describe("Zettings", function() {
 
 
     it("Assert that #get and #getf returns the default value.", function() {
-      const Z = new Zettings();    
+      const Z = new Zettings(pwd);    
 
       expect(Z.get('none', 1)).to.be.equals(1);
       expect(Z.getf('none', 1)).to.be.equals(1);
@@ -95,11 +105,13 @@ describe("Zettings", function() {
 
 
     it("Assert that #getf throws an error when the source returns undefined.", function() {
-      const Z = new Zettings();    
-      expect(() => { Z.getf("willthrowerror") }).to.throw(Error); });
+      const Z = new Zettings(pwd);    
+      expect(() => { Z.getf("willthrowerror") }).to.throw(Error); 
+    });
 
-      it("Assert that #get calls the source with highest priority first.", function() {
-      const Z = new Zettings();
+
+    it("Assert that #get calls the source with highest priority first.", function() {
+      const Z = new Zettings(pwd);
       const mock1: Source = {name: "1", get: (a: string[]) => "one"  };
       const mock2: Source = {name: "2", get: (a: string[]) => "two"  };
       const mock3: Source = {name: "3", get: (a: string[]) => "three"};
@@ -119,19 +131,19 @@ describe("Zettings", function() {
       Z.get("a");
       expect(spMock1.notCalled).to.be.true;
       expect(spMock3.called).to.be.true;
-    });
+    });  
 
 
     it("Assert that #set throws an error when there're no source implementing it.", function() {
-      const Z = new Zettings();
+      const Z = new Zettings(pwd);
       Z.changeProfile('profile_with_no_sources');
       expect(() => {Z.set('key', 'value')}).to.throw(Error);
     });
   });  
-
+  
   
   it('Assert that there are default sources configured.', function() {
-    const Z = new Zettings({});
+    const Z = new Zettings(pwd);
     expect(Z.count()).to.be.greaterThan(0);
   });
 
@@ -140,11 +152,11 @@ describe("Zettings", function() {
     const Z = new Zettings({
       defaultEnvSource: false,
       defaultMemoSource: false,
+      pwd: ''
     });
 
     expect(Z.count()).to.be.equals(0);
-  });
-  
+  });  
 
 });
 
