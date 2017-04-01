@@ -18,7 +18,9 @@ module.exports = function(grunt) {
       options: {
         target: 'es6',
         module: 'commonjs',
-        sourceMaps: true        
+        sourceMaps: true,
+        outFile: '.dist/src/zettings.js',
+        declaration: true
       },      
       fastCompile:  { src: ['./{src,test}/**/*.ts'], outDir: '.dist/', options: { fast: 'always' } },
       fullCompile:  { src: ['./{src,test}/**/*.ts'], outDir: '.dist/', options: { fast: 'never'  } },
