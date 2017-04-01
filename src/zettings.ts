@@ -2,6 +2,7 @@ import EnvSource from './sources/src-env';
 import MemorySource from './sources/src-memory';
 import Logger from './utils/simple-logger';
 import TrFunction from './value-transformations/tr-function';
+import TrObject from './value-transformations/tr-object';
 
 const Log = new Logger('Zettings');
 
@@ -50,10 +51,16 @@ export interface Options {
   defaultMemoSourcePriority?: number;
 
   /**
-   * Specified if the default function transformation will be used
+   * Specifies if the default function transformation will be used
    * default - true
    */
   defaultTrFunction?: boolean;
+
+  /**
+   * Specifies if the default module/object transformation will be used
+   * default - true
+   */
+  defaultTrObject?: boolean;
 
   /**
    * Specify the working directory
@@ -115,12 +122,14 @@ export default class Zettings {
    */
   constructor(options: Options) {    
     this.profile = options.profile || this.DEF_PROFILE;
-
     this.lowestPriority = 0;
+    this.pwd = options.pwd;
+
     options.defaultMemoSource = getFirstValid(options.defaultMemoSource, true);    
     options.defaultEnvSource  = getFirstValid(options.defaultEnvSource,  true);
     options.defaultTrFunction = getFirstValid(options.defaultTrFunction, true);
-    this.pwd = options.pwd;
+    options.defaultTrObject   = getFirstValid(options.defaultTrObject,   true);
+    
 
     let memoPriority = getFirstValid(options.defaultMemoSourcePriority, 1);
     let envPriority  = getFirstValid(options.defaultEnvSourcePriority,  5);
@@ -132,7 +141,10 @@ export default class Zettings {
       this.addSource(new EnvSource(), envPriority, this.profile);
 
     if (options.defaultTrFunction)
-      this.addTransformation(new TrFunction({pwd: this.pwd}));      
+      this.addTransformation(new TrFunction({pwd: this.pwd}));
+
+    if (options.defaultTrObject)
+      this.addTransformation(new TrObject({pwd: this.pwd}));      
   }
 
 

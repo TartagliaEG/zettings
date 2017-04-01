@@ -4,6 +4,7 @@ const src_env_1 = require("./sources/src-env");
 const src_memory_1 = require("./sources/src-memory");
 const simple_logger_1 = require("./utils/simple-logger");
 const tr_function_1 = require("./value-transformations/tr-function");
+const tr_object_1 = require("./value-transformations/tr-object");
 const Log = new simple_logger_1.default('Zettings');
 class Zettings {
     constructor(options) {
@@ -14,10 +15,11 @@ class Zettings {
         this.counter = { total: 0 };
         this.profile = options.profile || this.DEF_PROFILE;
         this.lowestPriority = 0;
+        this.pwd = options.pwd;
         options.defaultMemoSource = getFirstValid(options.defaultMemoSource, true);
         options.defaultEnvSource = getFirstValid(options.defaultEnvSource, true);
         options.defaultTrFunction = getFirstValid(options.defaultTrFunction, true);
-        this.pwd = options.pwd;
+        options.defaultTrObject = getFirstValid(options.defaultTrObject, true);
         let memoPriority = getFirstValid(options.defaultMemoSourcePriority, 1);
         let envPriority = getFirstValid(options.defaultEnvSourcePriority, 5);
         if (options.defaultMemoSource)
@@ -26,6 +28,8 @@ class Zettings {
             this.addSource(new src_env_1.default(), envPriority, this.profile);
         if (options.defaultTrFunction)
             this.addTransformation(new tr_function_1.default({ pwd: this.pwd }));
+        if (options.defaultTrObject)
+            this.addTransformation(new tr_object_1.default({ pwd: this.pwd }));
     }
     addTransformation(transformation) {
         this.transformations.push(transformation);
