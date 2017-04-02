@@ -48,9 +48,9 @@ describe("Zettings", function() {
     });
 
 
-    it("Assert that #addValueTransformation is being applied on #get", function() {
+    it("Assert that #addValueResolver is being applied on #get", function() {
       const Z = new Zettings(pwd);
-      Z.addTransformation({name: "any", pattern: /value/i, transform: () => 'ok'});
+      Z.addValueResolver({name: "any", canResolve: () => true, resolve: () => 'ok'});
       Z.addSource({get:() => "value", name: 'any'});
       expect(Z.get('-')).to.be.equals('ok');
     });    

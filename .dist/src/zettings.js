@@ -3,14 +3,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const src_env_1 = require("./sources/src-env");
 const src_memory_1 = require("./sources/src-memory");
 const simple_logger_1 = require("./utils/simple-logger");
-const tr_function_1 = require("./value-transformations/tr-function");
-const tr_object_1 = require("./value-transformations/tr-object");
+const vr_reference_1 = require("./value-resolver/vr-reference");
 const Log = new simple_logger_1.default('Zettings');
 class Zettings {
     constructor(options) {
         this.DEF_PROFILE = 'DEFAULT_PROFILE';
         this.sources = [];
-        this.transformations = [];
+        this.valueResolvers = [];
         this.nameKeys = {};
         this.counter = { total: 0 };
         this.profile = options.profile || this.DEF_PROFILE;
@@ -18,21 +17,18 @@ class Zettings {
         this.pwd = options.pwd;
         options.defaultMemoSource = getFirstValid(options.defaultMemoSource, true);
         options.defaultEnvSource = getFirstValid(options.defaultEnvSource, true);
-        options.defaultTrFunction = getFirstValid(options.defaultTrFunction, true);
-        options.defaultTrObject = getFirstValid(options.defaultTrObject, true);
+        options.defaultRsReference = getFirstValid(options.defaultRsReference, true);
         let memoPriority = getFirstValid(options.defaultMemoSourcePriority, 1);
         let envPriority = getFirstValid(options.defaultEnvSourcePriority, 5);
         if (options.defaultMemoSource)
             this.addSource(new src_memory_1.default({}), memoPriority, this.profile);
         if (options.defaultEnvSource)
             this.addSource(new src_env_1.default(), envPriority, this.profile);
-        if (options.defaultTrFunction)
-            this.addTransformation(new tr_function_1.default({ pwd: this.pwd }));
-        if (options.defaultTrObject)
-            this.addTransformation(new tr_object_1.default({ pwd: this.pwd }));
+        if (options.defaultRsReference)
+            this.addValueResolver(new vr_reference_1.default({ pwd: this.pwd }));
     }
-    addTransformation(transformation) {
-        this.transformations.push(transformation);
+    addValueResolver(resolver) {
+        this.valueResolvers.push(resolver);
     }
     addSource(source, priority, profile) {
         if (priority === undefined && profile === undefined) {
@@ -89,9 +85,9 @@ class Zettings {
             break;
         }
         result = result === undefined ? def : result;
-        this.transformations.some((transformation) => {
-            if (transformation.pattern.test(result)) {
-                result = transformation.transform(result);
+        this.valueResolvers.some((resolver) => {
+            if (resolver.canResolve(result)) {
+                result = resolver.resolve(result);
                 return true;
             }
             return false;

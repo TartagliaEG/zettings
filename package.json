@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": ".dist/src/zettings.js",
-  "typings": ".dist/src/zettings.d.ts",
+  "typings": ".dist/src/declarations.d.ts",
   "scripts": {
     "start": "grunt start",
     "test":  "mocha --recursive .dist/test",

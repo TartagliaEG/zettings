@@ -1,8 +1,7 @@
 import EnvSource from './sources/src-env';
 import MemorySource from './sources/src-memory';
 import Logger from './utils/simple-logger';
-import TrFunction from './value-transformations/tr-function';
-import TrObject from './value-transformations/tr-object';
+import VrReference from './value-resolver/vr-reference';
 
 const Log = new Logger('Zettings');
 
@@ -51,16 +50,10 @@ export interface Options {
   defaultMemoSourcePriority?: number;
 
   /**
-   * Specifies if the default function transformation will be used
+   * Specifies if the default module/object resolver should be used
    * default - true
    */
-  defaultTrFunction?: boolean;
-
-  /**
-   * Specifies if the default module/object transformation will be used
-   * default - true
-   */
-  defaultTrObject?: boolean;
+  defaultRsReference?: boolean;
 
   /**
    * Specify the working directory
@@ -77,21 +70,21 @@ interface PrioritySource {
 }
 
 
-export interface ValueTransformation {
+export interface ValueResolver {
   /**
    * Name used mainly to log info
    */
   readonly name: string;
 
   /**
-   * The pattern that defines if this transformation will be applied
+   * Check if this implementation could resolve the given value.
    */
-  readonly pattern: RegExp;
+  canResolve(value: any): boolean;
 
   /**
-   * The transformation function
+   * The resolve function
    */
-  transform(value: any): any
+  resolve(value: any): any
 }
 
 
@@ -102,8 +95,8 @@ export default class Zettings {
   /** List of configured Sources **/
   private sources: PrioritySource[] = [];
 
-  /** List of value transformations to be applied each time the get is called */
-  private transformations: ValueTransformation[] = [];
+  /** List of value resolvers to be applied each time the get is called */
+  private valueResolvers: ValueResolver[] = [];
 
   /** Current active profile **/
   private profile: string;
@@ -125,10 +118,9 @@ export default class Zettings {
     this.lowestPriority = 0;
     this.pwd = options.pwd;
 
-    options.defaultMemoSource = getFirstValid(options.defaultMemoSource, true);    
-    options.defaultEnvSource  = getFirstValid(options.defaultEnvSource,  true);
-    options.defaultTrFunction = getFirstValid(options.defaultTrFunction, true);
-    options.defaultTrObject   = getFirstValid(options.defaultTrObject,   true);
+    options.defaultMemoSource  = getFirstValid(options.defaultMemoSource, true);    
+    options.defaultEnvSource   = getFirstValid(options.defaultEnvSource,  true);
+    options.defaultRsReference = getFirstValid(options.defaultRsReference,   true);
     
 
     let memoPriority = getFirstValid(options.defaultMemoSourcePriority, 1);
@@ -140,21 +132,18 @@ export default class Zettings {
     if (options.defaultEnvSource)
       this.addSource(new EnvSource(), envPriority, this.profile);
 
-    if (options.defaultTrFunction)
-      this.addTransformation(new TrFunction({pwd: this.pwd}));
-
-    if (options.defaultTrObject)
-      this.addTransformation(new TrObject({pwd: this.pwd}));      
+    if (options.defaultRsReference)
+      this.addValueResolver(new VrReference({pwd: this.pwd}));      
   }
 
 
   /** 
-   * Add a ValueTransformation to be applied each time the #get function is called.
+   * Add a ValueResolver to be applied each time the #get function is called.
    * 
-   * @param {ValueTransformation} transformation - The transformation instance.
+   * @param {ValueResolver} resolver - The resolver instance.
    **/
-  public addTransformation(transformation: ValueTransformation): void {
-    this.transformations.push(transformation);
+  public addValueResolver(resolver: ValueResolver): void {
+    this.valueResolvers.push(resolver);
   }
 
 
@@ -295,9 +284,9 @@ export default class Zettings {
 
     result = result === undefined ? def : result;
 
-    this.transformations.some((transformation) => {
-      if (transformation.pattern.test(result)) {
-        result = transformation.transform(result);
+    this.valueResolvers.some((resolver) => {
+      if (resolver.canResolve(result)) {
+        result = resolver.resolve(result);
         return true;
       }
 
@@ -359,3 +348,11 @@ export function getFirstValid(...values: any[]): any {
       return values[i];
   }
 }
+
+
+// import {forEachLeaf} from './utils/node-iteration';
+// const deepObj = {level1: {level2: [{level3: {key1: 'value1', key2: 'value2'}}, 'value3']}};
+// forEachLeaf(deepObj, (leaf) => {
+//   console.log(leaf);
+//   return false;
+// });

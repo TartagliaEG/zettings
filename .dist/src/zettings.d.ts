@@ -9,26 +9,25 @@ export interface Options {
     defaultEnvSourcePriority?: number;
     defaultMemoSource?: boolean;
     defaultMemoSourcePriority?: number;
-    defaultTrFunction?: boolean;
-    defaultTrObject?: boolean;
+    defaultRsReference?: boolean;
     pwd: string;
 }
-export interface ValueTransformation {
+export interface ValueResolver {
     readonly name: string;
-    readonly pattern: RegExp;
-    transform(value: any): any;
+    canResolve(value: any): boolean;
+    resolve(value: any): any;
 }
 export default class Zettings {
     readonly DEF_PROFILE: string;
     private pwd;
     private sources;
-    private transformations;
+    private valueResolvers;
     private profile;
     private lowestPriority;
     private nameKeys;
     private counter;
     constructor(options: Options);
-    addTransformation(transformation: ValueTransformation): void;
+    addValueResolver(resolver: ValueResolver): void;
     addSource(source: Source): void;
     addSource(source: Source, profile: string): void;
     addSource(source: Source, priority: number): void;

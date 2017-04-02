@@ -34,9 +34,9 @@ describe("Zettings", function () {
             Z.addSource(mock3);
             chai_1.expect(Z.count()).to.be.equals(count + 3);
         });
-        it("Assert that #addValueTransformation is being applied on #get", function () {
+        it("Assert that #addValueResolver is being applied on #get", function () {
             const Z = new zettings_1.default(pwd);
-            Z.addTransformation({ name: "any", pattern: /value/i, transform: () => 'ok' });
+            Z.addValueResolver({ name: "any", canResolve: () => true, resolve: () => 'ok' });
             Z.addSource({ get: () => "value", name: 'any' });
             chai_1.expect(Z.get('-')).to.be.equals('ok');
         });
