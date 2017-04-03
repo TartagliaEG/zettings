@@ -57,6 +57,7 @@ describe("Zettings", function () {
             const mock2 = { get: (key) => { return 2; }, name: "2" };
             Z.addSource(mock1, 'profile_one');
             Z.addSource(mock2, 'profile_two');
+            // call get using the default profile
             chai_1.expect(Z.getf('key')).to.not.be.ok;
             Z.changeProfile('profile_one');
             chai_1.expect(Z.getf('key')).to.be.equals(1);

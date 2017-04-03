@@ -5,6 +5,9 @@ const simple_logger_1 = require("../utils/simple-logger");
 const node_iteration_1 = require("../utils/node-iteration");
 const NAME = 'VR-DEEP_REFERENCE';
 const Log = new simple_logger_1.default('vr-deep-reference');
+/**
+ * Resolve the references in nested objects
+ */
 class VrDeepRef {
     constructor(options) {
         this.name = NAME;

@@ -2,12 +2,25 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const type_check_1 = require("./type-check");
 const CIRCULAR_KEY = '___$CIRCULAR';
+/**
+ * Iterates over the given node and call the onReachLeaf fuction on each leaf.
+ *
+ * @param {any} node - The root node to start looking for leafs. The node itself could be a node.
+ * @param {OnReachLeaf} onReachLeaf - The function called when the leaf is reached.
+ */
 function forEachLeaf(node, onReachLeaf) {
     const circularRefs = [];
     _forEachLeaf([node], onReachLeaf, circularRefs);
     circularRefs.forEach((item) => { delete item[CIRCULAR_KEY]; });
 }
 exports.forEachLeaf = forEachLeaf;
+/**
+ * Do a deep iteration in objects and arrays and call the onReachLeaf function on each leaf.
+ *
+ * @param {Array|Object} node - The array or object to iterate over
+ * @param {OnReachLeaf} onReachLeaf - The function called when the leaf is reached.
+ * @param {Array} circularRefs - An array to push all circular references into.
+ */
 function _forEachLeaf(node, onReachLeaf, circularRefs) {
     if (node[CIRCULAR_KEY])
         return;

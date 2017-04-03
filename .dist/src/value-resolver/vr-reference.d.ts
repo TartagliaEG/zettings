@@ -1,4 +1,8 @@
 import { ValueResolver } from '../zettings';
+/**
+ * Load the module (or any sub property) specified by the "path" within the pattern ${ref=path}.
+ * E.g:  ${ref=/path/to/the/module} OR ${ref=/path/to/the/module#subProperty}
+ */
 export default class VrReference implements ValueResolver {
     readonly name: string;
     readonly pattern: RegExp;

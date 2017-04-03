@@ -8,11 +8,18 @@ const type_check_1 = require("./utils/type-check");
 const _ = require("lodash");
 const Log = new simple_logger_1.default('Zettings');
 class Zettings {
+    /**
+     * @see Options
+     */
     constructor(options) {
         this.DEF_PROFILE = 'DEFAULT_PROFILE';
+        /** List of configured Sources **/
         this.sources = [];
+        /** List of value resolvers to be applied each time the get is called */
         this.valueResolvers = [];
+        /** Stores the names already used per profiles **/
         this.nameKeys = {};
+        /** Stores the number of sources per profile */
         this.counter = { total: 0 };
         this.profile = options.profile || this.DEF_PROFILE;
         this.lowestPriority = 0;
@@ -29,9 +36,20 @@ class Zettings {
         if (options.defaultRsReference)
             this.addValueResolver(new vr_reference_1.default({ pwd: this.pwd }));
     }
+    /**
+     * Add a ValueResolver to be applied each time the #get function is called.
+     *
+     * @param {ValueResolver} resolver - The resolver instance.
+     **/
     addValueResolver(resolver) {
         this.valueResolvers.push(resolver);
     }
+    /**
+     * @see addSource(source: Source): void;
+     * @see addSource(source: Source, profile: string): void;
+     * @see addSource(source: Source, priority: number): void;
+     * @see addSource(source: Source, priority: number, profile: string): void;
+     */
     addSource(source, priority, profile) {
         if (priority === undefined && profile === undefined) {
             priority = this.lowestPriority + 1;
@@ -65,13 +83,28 @@ class Zettings {
             return sourceA.priority - sourceB.priority;
         });
     }
+    /**
+     * Retrieve the number of sources associated with the given profile.
+     *
+     * @param {string} [profile] - The profile. defaults to "total".
+     */
     count(profile) {
         profile = profile || 'total';
         return this.counter[profile] || 0;
     }
+    /**
+     * Change the current configured profile. Only Sources added with the given profile will be used.
+     * @param {string} profile The new profile.
+     */
     changeProfile(profile) {
         this.profile = profile;
     }
+    /**
+     * Retrieve the value associated with the given key from the first matching source.
+     *
+     * @param {string} key - The key whose associated value is to be returned.
+     * @param {any} [def]  - A default value used when no value was found.
+     */
     getf(key, def) {
         let keys = key.replace(/]/g, '').split(/[\[.]/g);
         let result;
@@ -88,6 +121,14 @@ class Zettings {
         }
         return this.resolveValue(result, def);
     }
+    /**
+     * Retrieve the value associated with the given key. If the first source returns a primitive or an array, it will be returned.
+     * Otherwise, if the first source returns an object, the other source will be queried and have its results merged. The properties
+     * from the first source have higher priority. If the other sources return primitives or arrays, they will be ignored.
+     *
+     * @param {string} key - The key whose associated value is to be returned.
+     * @param {any} [def]  - A default value used when no value was found.
+     */
     getm(key, def) {
         const keys = key.replace(/]/g, '').split(/[\[.]/g);
         let result;
@@ -100,6 +141,7 @@ class Zettings {
             const value = source.get(keys);
             if (!type_check_1.isValid(value))
                 continue;
+            // If the 'type' has not been set yet and the value isn't an object, we can break the loop (primitives and arrays won't be merged).
             if (!type_check_1.isValid(type) && !type_check_1.isObject(value)) {
                 result = this.resolveValue(value, def);
                 break;
@@ -122,6 +164,13 @@ class Zettings {
         });
         return value === undefined ? def : value;
     }
+    /**
+     * Associate the value with the given key.
+     *
+     * @param {string} key - The mapping key
+     * @param {any} value  - The value to be saved
+     * @throws {Error}     - An error will be thrown if there is no source that handles this operation
+     */
     set(key, value) {
         let keys = key.replace(/]/g, '').split(/[\[.]/g);
         let isSetSupported = false;

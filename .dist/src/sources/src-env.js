@@ -26,6 +26,11 @@ class EnvSource {
             return process.env[key];
         return this.getAsObject(key);
     }
+    /**
+     * Transform all environment variables that starts with the given key in an object.
+     *
+     * @param {string} key
+     */
     getAsObject(key) {
         let result;
         Object.keys(process.env).forEach((envKey) => {
@@ -34,7 +39,9 @@ class EnvSource {
                 return;
             result = result || {};
             let remaining = envKey.replace(start, '');
+            // Replace the tokens to prevent collision
             if (this.uppercaseToken) {
+                // Check whether one of the tokens contains the other
                 if (this.separatorToken.indexOf(this.uppercaseToken) !== -1) {
                     remaining = remaining.replace(this.separatorToken, this.SEPARATOR_TEMP);
                     remaining = remaining.replace(this.uppercaseToken, this.UPPERCASE_TEMP);
@@ -48,6 +55,7 @@ class EnvSource {
                 remaining = remaining.replace(this.separatorToken, this.SEPARATOR_TEMP);
             }
             remaining = remaining.toLocaleLowerCase();
+            // Change the key case.
             if (this.environmentCase !== 'no_change') {
                 let ucase = '';
                 remaining.split(this.UPPERCASE_REGX).forEach((key) => {
@@ -62,6 +70,7 @@ class EnvSource {
                 });
                 remaining = ucase;
             }
+            // Transform the environment key in an object
             let currNode = result;
             remaining.split(this.SEPARATOR_REGX).forEach((key, idx, arr) => {
                 if (key.length === 0)
@@ -74,6 +83,11 @@ class EnvSource {
         });
         return result;
     }
+    /**
+     * Prefix all uppercase letters with the configured uppercaseToken.
+     *
+     * @param {string} key
+     */
     applyUppercaseToken(key) {
         if (!this.uppercaseToken)
             return key;
@@ -85,6 +99,11 @@ class EnvSource {
         });
         return newKey;
     }
+    /**
+     * Change the key letter case to match with the environment variables
+     *
+     * @param {string} key
+     */
     applyEnvironmentCase(key) {
         if (this.environmentCase === 'upper')
             key = key.toUpperCase();

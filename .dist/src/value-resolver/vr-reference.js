@@ -5,6 +5,10 @@ const _ = require("lodash");
 const simple_logger_1 = require("../utils/simple-logger");
 const NAME = 'TR-FUNCTION';
 const Log = new simple_logger_1.default('tr-function');
+/**
+ * Load the module (or any sub property) specified by the "path" within the pattern ${ref=path}.
+ * E.g:  ${ref=/path/to/the/module} OR ${ref=/path/to/the/module#subProperty}
+ */
 class VrReference {
     constructor(options) {
         this.name = NAME;
@@ -12,6 +16,7 @@ class VrReference {
         this.pwd = options.pwd;
     }
     resolve(value) {
+        // value#split results in ['', '${ref=', '<content>', '}']
         const content = value.split(this.pattern)[2];
         let moduleProp = content.split('#')[1];
         let modulePath = content.split('#')[0];
