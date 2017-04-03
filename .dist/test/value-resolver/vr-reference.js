@@ -22,6 +22,10 @@ describe("VrReference", function () {
             const v = new vr_reference_1.default({ pwd: __dirname });
             chai_1.expect(v.resolve('${ref=./vr-reference-mock.json#key}')).to.be.equals("value");
         });
+        it("Assert that node_modules libraries could be referenced.", function () {
+            const v = new vr_reference_1.default({ pwd: __dirname });
+            chai_1.expect(v.resolve('${ref=lodash}')).to.be.a('function');
+        });
     });
 });
 //# sourceMappingURL=vr-reference.js.map

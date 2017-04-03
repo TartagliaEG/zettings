@@ -31,5 +31,10 @@ describe("VrReference", function() {
       expect(v.resolve('${ref=./vr-reference-mock.json#key}')).to.be.equals("value");
     });
 
+    it("Assert that node_modules libraries could be referenced.", function() {
+      const v = new VrReference({pwd: __dirname});
+      expect(v.resolve('${ref=lodash}')).to.be.a('function');
+    });
+
   });
 });

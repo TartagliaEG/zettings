@@ -22,13 +22,20 @@ class VrReference {
         let modulePath = content.split('#')[0];
         let module;
         try {
+            if (/^[a-zA-Z]/.test(modulePath)) {
+                module = require(modulePath);
+                return !!moduleProp ? _.get(module, moduleProp) : module;
+            }
+        }
+        catch (err) { }
+        try {
             module = require(Path.join(this.pwd, modulePath));
+            return !!moduleProp ? _.get(module, moduleProp) : module;
         }
         catch (err) {
             Log.e('Faile to load the file pointed by the path "' + modulePath + '"');
             throw err;
         }
-        return !!moduleProp ? _.get(module, moduleProp) : module;
     }
     canResolve(value) {
         return this.pattern.test(value);

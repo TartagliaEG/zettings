@@ -29,13 +29,21 @@ export default class VrReference implements ValueResolver {
     let module: any; 
 
     try {
-      module = require(Path.join(this.pwd, modulePath));          
+      if(/^[a-zA-Z]/.test(modulePath)) {
+        module = require(modulePath);
+        return !!moduleProp ? _.get(module, moduleProp) : module;
+      }
+    } catch(err) { /* ignore this error. */ }
+
+    try {      
+      module = require(Path.join(this.pwd, modulePath));
+      return !!moduleProp ? _.get(module, moduleProp) : module;
+      
     } catch(err) {
       Log.e('Faile to load the file pointed by the path "'+modulePath+'"');
       throw err;
     }
     
-    return !!moduleProp ? _.get(module, moduleProp) : module;
   }
 
   public canResolve(value: any): boolean {
