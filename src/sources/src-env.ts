@@ -11,9 +11,9 @@ export default class EnvSource implements Source {
   private readonly uppercaseToken: string;
   private readonly prefix: string;
   private readonly SEPARATOR_TEMP = "§§";
-  private readonly SEPARATOR_REGX = /§§/g;
+  private readonly SEPARATOR_REGX = /§§/;
   private readonly UPPERCASE_TEMP = "¬¬";
-  private readonly UPPERCASE_REGX = /(?=¬¬)/g;
+  private readonly UPPERCASE_REGX = /(?=¬¬)/;
 
   constructor(options?: EnvOptions) {
     options = options || {};
@@ -74,6 +74,7 @@ export default class EnvSource implements Source {
         remaining = remaining.replace(this.separatorToken, this.SEPARATOR_TEMP);
       }
       
+      remaining = remaining.toLocaleLowerCase();
 
       // Change the key case.
       if(this.environmentCase !== 'no_change') {
@@ -148,8 +149,7 @@ export default class EnvSource implements Source {
       key = key.toLowerCase();
 
     return key;
-  }
-  
+  }  
 }
 
 

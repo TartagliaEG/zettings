@@ -326,6 +326,8 @@ export default class Zettings {
       
       result = _.merge({}, value, result);
     }
+
+    return result;
   }
 
 
@@ -377,3 +379,8 @@ export function getFirstValid(...values: any[]): any {
       return values[i];
   }
 }
+
+
+import VrDeepRef from './value-resolver/vr-deep-reference';
+const v = new VrDeepRef({pwd: __dirname + '/../test/value-resolver/'});
+v.resolve({ root: '${ref=./vr-reference-mock}' });

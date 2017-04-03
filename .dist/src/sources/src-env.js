@@ -6,9 +6,9 @@ const Log = new simple_logger_1.default('src-env');
 class EnvSource {
     constructor(options) {
         this.SEPARATOR_TEMP = "§§";
-        this.SEPARATOR_REGX = /§§/g;
+        this.SEPARATOR_REGX = /§§/;
         this.UPPERCASE_TEMP = "¬¬";
-        this.UPPERCASE_REGX = /(?=¬¬)/g;
+        this.UPPERCASE_REGX = /(?=¬¬)/;
         options = options || {};
         this.name = options.name || 'ENV';
         this.environmentCase = options.environmentCase || 'upper';
@@ -47,6 +47,7 @@ class EnvSource {
             else {
                 remaining = remaining.replace(this.separatorToken, this.SEPARATOR_TEMP);
             }
+            remaining = remaining.toLocaleLowerCase();
             if (this.environmentCase !== 'no_change') {
                 let ucase = '';
                 remaining.split(this.UPPERCASE_REGX).forEach((key) => {

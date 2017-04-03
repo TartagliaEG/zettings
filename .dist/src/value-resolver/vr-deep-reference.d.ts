@@ -1,9 +1,9 @@
 import { ValueResolver } from '../zettings';
 import ReferenceResolver from './vr-reference';
-export default class VrZettings implements ValueResolver {
+export default class VrDeepRef implements ValueResolver {
     readonly name: string;
     readonly pwd: string;
-    readonly vrreference: ReferenceResolver;
+    readonly vrReference: ReferenceResolver;
     constructor(options: Options);
     resolve(value: any): any;
     canResolve(value: any): boolean;

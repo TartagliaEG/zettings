@@ -56,12 +56,23 @@ describe("EnvSource", function() {
     process.env['SEGMENT1__OTHER'] = '12';
     const env: EnvSource = new EnvSource();
 
-    expect(env.get(['SEGMENT1', 'SEGMENT2', 'SEGMENT3'])).to.be.equals('13');
-    expect(env.get(['SEGMENT1', 'SEGMENT2'])).to.be.deep.equals({SEGMENT3: '13'});
-    expect(env.get(['SEGMENT1'])).to.be.deep.equals({ SEGMENT2: {SEGMENT3: '13'}, OTHER: '12'});
+    expect(env.get(['segment1', 'segment2', 'segment3'])).to.be.equals('13');
+    expect(env.get(['segment1', 'segment2'])).to.be.deep.equals({segment3: '13'});
+    expect(env.get(['segment1'])).to.be.deep.equals({ segment2: {segment3: '13'}, other: '12'});
 
     delete process.env['SEGMENT1__SEGMENT2__SEGMENT3'];
     delete process.env['SEGMENT1__OTHER'];
+  }); 
+
+
+  it("Assert that the uppercase token will be applied to the resulting object.", function() {
+    process.env['SERVER__HOST_NAME'] = 'test';    
+    const env: EnvSource = new EnvSource({uppercaseToken: '_'});
+
+    expect(env.get(['server', 'hostName'])).to.be.equals('test');
+    expect(env.get(['server'])).to.be.deep.equals({hostName: 'test'});
+
+    delete process.env['SERVER__HOST_NAME'];    
   }); 
   
 });

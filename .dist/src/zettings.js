@@ -110,6 +110,7 @@ class Zettings {
                 continue;
             result = _.merge({}, value, result);
         }
+        return result;
     }
     resolveValue(value, def) {
         this.valueResolvers.some((resolver) => {
@@ -144,4 +145,7 @@ function getFirstValid(...values) {
     }
 }
 exports.getFirstValid = getFirstValid;
+const vr_deep_reference_1 = require("./value-resolver/vr-deep-reference");
+const v = new vr_deep_reference_1.default({ pwd: __dirname + '/../test/value-resolver/' });
+v.resolve({ root: '${ref=./vr-reference-mock}' });
 //# sourceMappingURL=zettings.js.map

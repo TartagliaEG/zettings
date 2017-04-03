@@ -12,3 +12,7 @@ export {EnvSource, MemorySource, JsonSource};
 
 import Zettings from './zettings';
 export default {Zettings};
+
+
+import {Source} from './zettings';
+

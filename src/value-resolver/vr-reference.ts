@@ -9,7 +9,7 @@ const Log = new Logger('tr-function');
 
 /** 
  * Load the module (or any sub property) specified by the "path" within the pattern ${ref=path}. 
- * E.g:  ${ref=/path/to/the/module}  OR  ${ref=/path/to/the/module#subProperty}
+ * E.g:  ${ref=/path/to/the/module} OR ${ref=/path/to/the/module#subProperty}
  */
 export default class VrReference implements ValueResolver {
   readonly name: string = NAME;
@@ -25,9 +25,9 @@ export default class VrReference implements ValueResolver {
     const content: string = value.split(this.pattern)[2]; 
 
     let moduleProp: string = content.split('#')[1];
-    let modulePath: string = content.split('#')[0];
-    
+    let modulePath: string = content.split('#')[0];    
     let module: any; 
+
     try {
       module = require(Path.join(this.pwd, modulePath));          
     } catch(err) {

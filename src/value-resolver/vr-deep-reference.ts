@@ -6,37 +6,37 @@ import * as _ from 'lodash';
 import Logger from '../utils/simple-logger';
 import {forEachLeaf} from '../utils/node-iteration';
 
-const NAME = 'TR-FUNCTION';
+const NAME = 'VR-DEEP_REFERENCE';
 
-const Log = new Logger('tr-function');
+const Log = new Logger('vr-deep-reference');
 
 /** 
- * Load the module (or any sub property) specified by the "path" within the pattern ${ref=path}. 
- * E.g:  ${ref=/path/to/the/module}  OR  ${ref=/path/to/the/module#subProperty}
+ * Resolve the references in nested objects 
  */
-export default class VrZettings implements ValueResolver {
+export default class VrDeepRef implements ValueResolver {
   readonly name: string = NAME;  
   readonly pwd: string;
-  readonly vrreference: ReferenceResolver;
+  readonly vrReference: ReferenceResolver;
 
   constructor(options: Options) {
     this.pwd = options.pwd;
-    this.vrreference = new ReferenceResolver({pwd: options.pwd});
+    this.vrReference = new ReferenceResolver({pwd: options.pwd});
   }
 
   public resolve(value: any): any {
     forEachLeaf(value, (leaf: primitive, mutate: Function): boolean => {
-      if(this.vrreference.canResolve(leaf))
-        mutate(this.vrreference.resolve(leaf));
+      if(this.vrReference.canResolve(leaf))
+        mutate(this.vrReference.resolve(leaf));
       return false;
-    });    
+    });
+    return value;
   }
 
   public canResolve(value: any): boolean {
     let canResolve = false;
 
     forEachLeaf(value, (leaf: primitive): boolean => {
-      return this.vrreference.canResolve(leaf);
+      return this.vrReference.canResolve(leaf);
     });    
 
     return canResolve;

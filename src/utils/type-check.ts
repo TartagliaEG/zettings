@@ -17,5 +17,3 @@ export function isValid(value: any): boolean {
 }
 
 export {isArray};
-
-

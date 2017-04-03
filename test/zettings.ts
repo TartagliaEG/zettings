@@ -9,7 +9,7 @@ const pwd = {pwd: ''};
 
 describe("Zettings", function() {
 
-  describe(".addSource & .count & .addTransformation", function() {
+  describe(".addSource & .count & .addValueResolver", function() {
     it("Assert that source names are unique per profile.", function() {
       const Z = new Zettings(pwd);
       const mock: Source = { get: (key: string[]): any => {return 1;}, name: "mock" };
@@ -57,7 +57,7 @@ describe("Zettings", function() {
   });
 
 
-  describe(".getf & .getm & .set", function() {
+  describe(".getf & .set", function() {
 
     it("Assert that the source's #get method receives the key as a token array.", function() {
       const Z = new Zettings(pwd);
@@ -96,13 +96,13 @@ describe("Zettings", function() {
 
 
     it("Assert that #getf returns the default value.", function() {
-      const Z = new Zettings(pwd);    
+      const Z = new Zettings(pwd);
 
       expect(Z.getf('none', 1)).to.be.equals(1);      
     });
-    
 
-    it("Assert that #get calls the source with highest priority first.", function() {
+
+    it("Assert that #getf calls the source with highest priority first.", function() {
       const Z = new Zettings(pwd);
       const mock1: Source = {name: "1", get: (a: string[]) => "one"  };
       const mock2: Source = {name: "2", get: (a: string[]) => "two"  };
@@ -126,12 +126,90 @@ describe("Zettings", function() {
     });  
 
 
-    it("Assert that #set throws an error when there're no source implementing it.", function() {
+    it("Assert that #set throws an error when there're no sources implementing it.", function() {
       const Z = new Zettings(pwd);
       Z.changeProfile('profile_with_no_sources');
       expect(() => {Z.set('key', 'value')}).to.throw(Error);
     });
   });  
+
+  describe(".getm", function() {
+    it("Assert that #getm will merge objects from multiple sources.", function() {
+      const Z = new Zettings(pwd);
+      const mock1: Source = {name: "1", get: (a: string[]) => {return {'key1': 'a'}}};
+      const mock2: Source = {name: "2", get: (a: string[]) => {return {'key2': 'b'}}};
+      const mock3: Source = {name: "3", get: (a: string[]) => {return {'key3': 'c'}}};
+
+      Z.addSource(mock1);
+      Z.addSource(mock2);
+      Z.addSource(mock3);
+
+      expect(Z.getm('a')).to.be.deep.equals({'key1': 'a', 'key2': 'b', 'key3': 'c'});
+    });
+
+
+    it("Assert that #getm will merge sources based on its priority.", function() {
+      const Z = new Zettings(pwd);
+      const mock1: Source = {name: "1", get: (a: string[]) => {return {'key1': 'a'}}};
+      const mock2: Source = {name: "2", get: (a: string[]) => {return {'key1': 'b'}}};
+      const mock3: Source = {name: "3", get: (a: string[]) => {return {'key1': 'c'}}};
+
+      Z.addSource(mock1, 11);
+      Z.addSource(mock2, 10);
+      Z.addSource(mock3, 12);
+
+      expect(Z.getm('a')).to.be.deep.equals({'key1': 'b'});
+    });    
+
+
+    it("Assert that #getm merge only objects.", function() {
+      const Z = new Zettings(pwd);
+      const mock1: Source = {name: "1", get: (a: string[]) => {return {'key1': 'a'}}};
+      const mock2: Source = {name: "2", get: (a: string[]) => 'non-object' };
+
+      Z.addSource(mock1, 11);
+      Z.addSource(mock2, 12);
+
+      expect(Z.getm('a')).to.be.deep.equals({'key1': 'a'});
+    });
+
+
+    it("Assert that #getm doesn't search other sources when the first one returns a primitive value.", function() {
+      const Z = new Zettings(pwd);
+      const get = spy((a: string[]) => 'non-object');
+      const mock1: Source = {name: "1", get: (a: string[]) => 'first-value'};
+      const mock2: Source = {name: "2", get: get};
+
+      Z.getm('a');
+
+      expect(get.notCalled).to.be.true;
+    });
+
+
+    it("Assert that #getm retrieve values from the source with highest priority.", function() {
+      const Z = new Zettings(pwd);
+      const mock1: Source = {name: "1", get: (a: string[]) => "one"  };
+      const mock2: Source = {name: "2", get: (a: string[]) => "two"  };
+      const mock3: Source = {name: "3", get: (a: string[]) => "three"};
+
+      Z.addSource(mock1, 10);
+      expect(Z.getm("a")).to.be.equals("one");
+
+      Z.addSource(mock2, 11);
+      expect(Z.getm("a")).to.be.equals("one");
+
+      Z.addSource(mock3, 9);
+      expect(Z.getm("a")).to.be.equals("three");
+
+      const spMock1 = spy(mock1, "get");
+      const spMock3 = spy(mock3, "get");
+
+      Z.getf("a");
+      expect(spMock1.notCalled).to.be.true;
+      expect(spMock3.called).to.be.true;
+    });
+    
+  });
   
   
   it('Assert that there are default sources configured.', function() {
