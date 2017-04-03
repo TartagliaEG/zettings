@@ -34,8 +34,9 @@ export default class Zettings {
     addSource(source: Source, priority: number, profile: string): void;
     count(profile?: string): number;
     changeProfile(profile: string): void;
-    get(key: string, def?: any): any;
     getf(key: string, def?: any): any;
+    getm(key: string, def?: Object): any;
+    private resolveValue(value, def);
     set(key: string, value: any): void;
 }
 export declare function getFirstValid(...values: any[]): any;

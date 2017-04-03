@@ -54,13 +54,28 @@ describe("NodeIteration", function() {
 
 
     it('Assert that deeply nested values will be reached.', function() {
-      const onReachLeaf = spy((v) => {console.log(v); return false});
+      const onReachLeaf = spy((v) => false);
       const deepObj = {level1: {level2: [{level3: {key1: 'value1', key2: 'value2'}}, 'value3']}}
       forEachLeaf(deepObj, onReachLeaf);
       expect(onReachLeaf.calledThrice).to.be.true;
       expect(onReachLeaf.getCall(0).args[0]).to.be.equals('value1');
       expect(onReachLeaf.getCall(1).args[0]).to.be.equals('value2');
       expect(onReachLeaf.getCall(2).args[0]).to.be.equals('value3');
+    });
+
+
+    it('Assert that circular references are ignored.', function() {
+      const onReachLeaf = spy(() => false);
+      const obj: any = {a: 1, b: 2};
+      obj.ref1 = obj;
+      obj.ref2 = obj;
+      
+      const obj2 = {ref: obj, c: 3};
+      obj.ref3 = [obj2];
+
+      forEachLeaf(obj, onReachLeaf);
+
+      expect(onReachLeaf.calledThrice).to.be.true;
     });
   });
 });

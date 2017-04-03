@@ -11,14 +11,14 @@ exports.forEachLeaf = forEachLeaf;
 function _forEachLeaf(node, onReachLeaf, circularRefs) {
     if (node[CIRCULAR_KEY])
         return;
-    let keys = Array.isArray(node) ? { length: node.length } : Object.keys(node);
+    let keys = type_check_1.isArray(node) ? { length: node.length } : Object.keys(node);
     node[CIRCULAR_KEY] = true;
     circularRefs.push(node);
     for (let i = 0; i < keys.length; i++) {
         let key = keys[i] || i.toString();
         let shouldBreak;
         const value = node[key];
-        if (type_check_1.isObject(value))
+        if (type_check_1.isObject(value) || type_check_1.isArray(value))
             shouldBreak = _forEachLeaf(value, onReachLeaf, circularRefs);
         else
             shouldBreak = onReachLeaf(value, (newVal) => { node[key] = newVal; });

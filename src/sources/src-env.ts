@@ -153,11 +153,6 @@ export default class EnvSource implements Source {
 }
 
 
-
-
-
-
-
 export interface EnvOptions {  
   name?: string;
   
@@ -171,7 +166,7 @@ export interface EnvOptions {
    * 
    * If all environment variables are being declared with the same letter case, this token could be used to mark capital letters.
    * For example, if the property 'uppercaseToken' was set to '_', the 'separatorToken' was set to  '__' and there is an environment 
-   * variable named 'SERVER__SETTINGS__MAIN_PORT', calling #get(['server']) will return the object { settings: {mainPort: <value>} }.
+   * variable named 'SERVER__SETTINGS__MAIN_PORT', calling #get(['server']) will returns { settings: {mainPort: <value>} }.
    */
   uppercaseToken?: string,
 

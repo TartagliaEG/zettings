@@ -4,6 +4,8 @@ const src_env_1 = require("./sources/src-env");
 const src_memory_1 = require("./sources/src-memory");
 const simple_logger_1 = require("./utils/simple-logger");
 const vr_reference_1 = require("./value-resolver/vr-reference");
+const type_check_1 = require("./utils/type-check");
+const _ = require("lodash");
 const Log = new simple_logger_1.default('Zettings');
 class Zettings {
     constructor(options) {
@@ -70,7 +72,7 @@ class Zettings {
     changeProfile(profile) {
         this.profile = profile;
     }
-    get(key, def) {
+    getf(key, def) {
         let keys = key.replace(/]/g, '').split(/[\[.]/g);
         let result;
         for (let i = 0; i < this.sources.length; i++) {
@@ -84,21 +86,40 @@ class Zettings {
             result = value;
             break;
         }
-        result = result === undefined ? def : result;
+        return this.resolveValue(result, def);
+    }
+    getm(key, def) {
+        const keys = key.replace(/]/g, '').split(/[\[.]/g);
+        let result;
+        let type;
+        for (let i = 0; i < this.sources.length; i++) {
+            const prioritySource = this.sources[i];
+            const source = prioritySource.source;
+            if (prioritySource.profile !== this.profile)
+                continue;
+            const value = source.get(keys);
+            if (!type_check_1.isValid(value))
+                continue;
+            if (!type_check_1.isValid(type) && !type_check_1.isObject(value)) {
+                result = this.resolveValue(value, def);
+                break;
+            }
+            type = type || typeof value;
+            result = result || {};
+            if (typeof value !== type)
+                continue;
+            result = _.merge({}, value, result);
+        }
+    }
+    resolveValue(value, def) {
         this.valueResolvers.some((resolver) => {
-            if (resolver.canResolve(result)) {
-                result = resolver.resolve(result);
+            if (resolver.canResolve(value)) {
+                value = resolver.resolve(value);
                 return true;
             }
             return false;
         });
-        return result;
-    }
-    getf(key, def) {
-        const value = this.get(key, def);
-        if (value == undefined || value == null)
-            throw new Error("No available setting for key '" + key + "'");
-        return value;
+        return value === undefined ? def : value;
     }
     set(key, value) {
         let keys = key.replace(/]/g, '').split(/[\[.]/g);

@@ -1,5 +1,5 @@
 import {primitive} from './types';
-import {isObject} from './type-check';
+import {isObject, isArray} from './type-check';
 const CIRCULAR_KEY = '___$CIRCULAR';
 
 /**
@@ -32,8 +32,8 @@ export type OnReachLeaf = (leaf: primitive, mutate: (newValue: any) => void) => 
 function _forEachLeaf(node: Array<any>|Object, onReachLeaf: OnReachLeaf, circularRefs: Array<any>): boolean {    
   if(node[CIRCULAR_KEY])
     return;  
-  
-  let keys = Array.isArray(node) ? {length: node.length} : Object.keys(node);  
+    
+  let keys = isArray(node) ? {length: node.length} : Object.keys(node);  
 
   node[CIRCULAR_KEY] = true;
   circularRefs.push(node);
@@ -43,7 +43,7 @@ function _forEachLeaf(node: Array<any>|Object, onReachLeaf: OnReachLeaf, circula
     let shouldBreak: boolean;
     const value = node[key];
     
-    if(isObject(value)) 
+    if(isObject(value) || isArray(value)) 
       shouldBreak = _forEachLeaf(value, onReachLeaf, circularRefs);        
     else       
       shouldBreak = onReachLeaf(value, (newVal: any) => {node[key] = newVal});

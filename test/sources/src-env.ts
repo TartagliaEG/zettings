@@ -8,7 +8,7 @@ setLoggerLevel(LVL_NONE);
 
 describe("EnvSource", function() {
   
-  it("Assert that, by default, keys are joined by underscore and toUpperCase is called.", function() {
+  it("Assert that, by default, keys are joined by two underscores and toUpperCase is called.", function() {
     const env: EnvSource = new EnvSource();
     process.env.TEST__KEY = "1";
     expect(env.get(["test", "key"])).to.be.equals("1");
@@ -62,6 +62,6 @@ describe("EnvSource", function() {
 
     delete process.env['SEGMENT1__SEGMENT2__SEGMENT3'];
     delete process.env['SEGMENT1__OTHER'];
-  });
+  }); 
   
 });

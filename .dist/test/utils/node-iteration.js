@@ -41,13 +41,23 @@ describe("NodeIteration", function () {
             chai_1.expect(onReachLeaf.calledTwice).to.be.false;
         });
         it('Assert that deeply nested values will be reached.', function () {
-            const onReachLeaf = sinon_1.spy((v) => { console.log(v); return false; });
+            const onReachLeaf = sinon_1.spy((v) => false);
             const deepObj = { level1: { level2: [{ level3: { key1: 'value1', key2: 'value2' } }, 'value3'] } };
             node_iteration_1.forEachLeaf(deepObj, onReachLeaf);
             chai_1.expect(onReachLeaf.calledThrice).to.be.true;
             chai_1.expect(onReachLeaf.getCall(0).args[0]).to.be.equals('value1');
             chai_1.expect(onReachLeaf.getCall(1).args[0]).to.be.equals('value2');
             chai_1.expect(onReachLeaf.getCall(2).args[0]).to.be.equals('value3');
+        });
+        it('Assert that circular references are ignored.', function () {
+            const onReachLeaf = sinon_1.spy(() => false);
+            const obj = { a: 1, b: 2 };
+            obj.ref1 = obj;
+            obj.ref2 = obj;
+            const obj2 = { ref: obj, c: 3 };
+            obj.ref3 = [obj2];
+            node_iteration_1.forEachLeaf(obj, onReachLeaf);
+            chai_1.expect(onReachLeaf.calledThrice).to.be.true;
         });
     });
 });

@@ -5,7 +5,7 @@ const src_env_1 = require("../../src/sources/src-env");
 const simple_logger_1 = require("../../src/utils/simple-logger");
 simple_logger_1.setLoggerLevel(simple_logger_1.LVL_NONE);
 describe("EnvSource", function () {
-    it("Assert that, by default, keys are joined by underscore and toUpperCase is called.", function () {
+    it("Assert that, by default, keys are joined by two underscores and toUpperCase is called.", function () {
         const env = new src_env_1.default();
         process.env.TEST__KEY = "1";
         chai_1.expect(env.get(["test", "key"])).to.be.equals("1");
@@ -48,4 +48,4 @@ describe("EnvSource", function () {
         delete process.env['SEGMENT1__OTHER'];
     });
 });
-//# sourceMappingURL=env-source.js.map
+//# sourceMappingURL=src-env.js.map

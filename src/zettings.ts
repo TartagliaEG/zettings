@@ -2,6 +2,8 @@ import EnvSource from './sources/src-env';
 import MemorySource from './sources/src-memory';
 import Logger from './utils/simple-logger';
 import VrReference from './value-resolver/vr-reference';
+import {isValid, isObject, isArray, isPrimitive} from './utils/type-check';
+import * as _ from 'lodash';
 
 const Log = new Logger('Zettings');
 
@@ -257,12 +259,12 @@ export default class Zettings {
   
   
   /**
-   * Retrieve the value associated with the given key.
+   * Retrieve the value associated with the given key from the first matching source.
    * 
    * @param {string} key - The key whose associated value is to be returned.
    * @param {any} [def]  - A default value used when no value was found.
    */
-  public get(key: string, def?: any): any {
+  public getf(key: string, def?: any): any {
     let keys = key.replace(/]/g, '').split(/[\[.]/g);
     let result: any;
 
@@ -282,36 +284,63 @@ export default class Zettings {
       break;
     }
 
-    result = result === undefined ? def : result;
+    return this.resolveValue(result, def);
+  }
+
+  /**   
+   * Retrieve the value associated with the given key. If the first source returns a primitive or an array, it will be returned. 
+   * Otherwise, if the first source returns an object, the other source will be queried and have its results merged. The properties
+   * from the first source have higher priority. If the other sources return primitives or arrays, they will be ignored.
+   * 
+   * @param {string} key - The key whose associated value is to be returned.
+   * @param {any} [def]  - A default value used when no value was found.
+   */
+  public getm(key: string, def?: Object): any {
+    const keys = key.replace(/]/g, '').split(/[\[.]/g);
+    let result: any;
+    let type: string;
+
+    for(let i = 0; i < this.sources.length; i++) {
+      const prioritySource = this.sources[i];
+      const source = prioritySource.source;
+
+      if(prioritySource.profile !== this.profile) 
+        continue;
+
+      const value = source.get(keys);
+      
+      if (!isValid(value))
+        continue;
+
+      // If the 'type' has not been set yet and the value isn't an object, we can break the loop (primitives and arrays won't be merged).
+      if(!isValid(type) && !isObject(value)) {
+        result = this.resolveValue(value, def);
+        break;
+      }
+
+      type = type || typeof value;
+      result = result || {};
+
+      if(typeof value !== type)
+        continue;     
+      
+      result = _.merge({}, value, result);
+    }
+  }
+
+
+  private resolveValue(value: any, def: any): any {    
 
     this.valueResolvers.some((resolver) => {
-      if (resolver.canResolve(result)) {
-        result = resolver.resolve(result);
+      if (resolver.canResolve(value)) {
+        value = resolver.resolve(value);
         return true;
       }
 
       return false;
     });
 
-    return result;
-  }
-    
-  
-  /**
-   * Retrieve the value associated with the given key. Throw an error if the value is 
-   * undefined.
-   * 
-   * @param {string} key - The key whose associated value is to be returned.
-   * @param {any} [def]  - A default value used when no value was found.
-   * @throws {Error}     - If the value is not found and there is no default value.
-   */
-  public getf(key: string, def?: any): any {
-    const value = this.get(key, def);
-    
-    if (value == undefined || value == null)
-      throw new Error("No available setting for key '" + key + "'");
-
-    return value;
+    return value === undefined ? def : value;
   }
 
 
@@ -348,11 +377,3 @@ export function getFirstValid(...values: any[]): any {
       return values[i];
   }
 }
-
-
-// import {forEachLeaf} from './utils/node-iteration';
-// const deepObj = {level1: {level2: [{level3: {key1: 'value1', key2: 'value2'}}, 'value3']}};
-// forEachLeaf(deepObj, (leaf) => {
-//   console.log(leaf);
-//   return false;
-// });

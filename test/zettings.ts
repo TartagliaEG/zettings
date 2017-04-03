@@ -52,13 +52,12 @@ describe("Zettings", function() {
       const Z = new Zettings(pwd);
       Z.addValueResolver({name: "any", canResolve: () => true, resolve: () => 'ok'});
       Z.addSource({get:() => "value", name: 'any'});
-      expect(Z.get('-')).to.be.equals('ok');
-    });    
-
+      expect(Z.getf('-')).to.be.equals('ok');
+    });
   });
 
 
-  describe(".get & .getf & .set", function() {
+  describe(".getf & .getm & .set", function() {
 
     it("Assert that the source's #get method receives the key as a token array.", function() {
       const Z = new Zettings(pwd);
@@ -67,7 +66,7 @@ describe("Zettings", function() {
       const spGet = spy(mock, "get");
           
       Z.addSource(mock);
-      Z.get("key[2].with.multiple[5][3][4].sections");
+      Z.getf("key[2].with.multiple[5][3][4].sections");
       expect(spGet.getCall(0).args[0]).to.be.deep.equals(["key", "2", "with", "multiple", "5", "3", "4", "sections"]);    
 
       spGet.restore();
@@ -82,33 +81,26 @@ describe("Zettings", function() {
       Z.addSource(mock1, 'profile_one');
       Z.addSource(mock2, 'profile_two');
       // call get using the default profile
-      expect(Z.get('key')).to.not.be.ok;
+      expect(Z.getf('key')).to.not.be.ok;
 
       Z.changeProfile('profile_one');
-      expect(Z.get('key')).to.be.equals(1);
+      expect(Z.getf('key')).to.be.equals(1);
 
       Z.changeProfile('profile_two');
-      expect(Z.get('key')).to.be.equals(2);
+      expect(Z.getf('key')).to.be.equals(2);
 
       Z.changeProfile(Z.DEF_PROFILE);
-      expect(Z.get('key')).to.not.be.ok;
+      expect(Z.getf('key')).to.not.be.ok;
     
     });
 
 
-    it("Assert that #get and #getf returns the default value.", function() {
+    it("Assert that #getf returns the default value.", function() {
       const Z = new Zettings(pwd);    
 
-      expect(Z.get('none', 1)).to.be.equals(1);
-      expect(Z.getf('none', 1)).to.be.equals(1);
+      expect(Z.getf('none', 1)).to.be.equals(1);      
     });
-
-
-    it("Assert that #getf throws an error when the source returns undefined.", function() {
-      const Z = new Zettings(pwd);    
-      expect(() => { Z.getf("willthrowerror") }).to.throw(Error); 
-    });
-
+    
 
     it("Assert that #get calls the source with highest priority first.", function() {
       const Z = new Zettings(pwd);
@@ -117,18 +109,18 @@ describe("Zettings", function() {
       const mock3: Source = {name: "3", get: (a: string[]) => "three"};
 
       Z.addSource(mock1, 10);
-      expect(Z.get("a")).to.be.equals("one");
+      expect(Z.getf("a")).to.be.equals("one");
 
       Z.addSource(mock2, 11);
-      expect(Z.get("a")).to.be.equals("one");
+      expect(Z.getf("a")).to.be.equals("one");
 
       Z.addSource(mock3, 9);
-      expect(Z.get("a")).to.be.equals("three");
+      expect(Z.getf("a")).to.be.equals("three");
 
       const spMock1 = spy(mock1, "get");
       const spMock3 = spy(mock3, "get");
 
-      Z.get("a");
+      Z.getf("a");
       expect(spMock1.notCalled).to.be.true;
       expect(spMock3.called).to.be.true;
     });  
@@ -156,7 +148,7 @@ describe("Zettings", function() {
     });
 
     expect(Z.count()).to.be.equals(0);
-  });  
+  });
 
 });
 

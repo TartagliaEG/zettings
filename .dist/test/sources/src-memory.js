@@ -16,4 +16,4 @@ describe("MemorySource", function () {
         chai_1.expect(mem.name).to.be.equals("custom name");
     });
 });
-//# sourceMappingURL=memory-source.js.map
+//# sourceMappingURL=src-memory.js.map
