@@ -36,10 +36,15 @@ export interface Options {
      */
     defaultMemoSourcePriority?: number;
     /**
-     * Specifies if the default module/object resolver should be used
+     * Specifies if the default reference resolver should be used
      * default - true
      */
-    defaultRsReference?: boolean;
+    defaultVrReference?: boolean;
+    /**
+     * Specifies if the default deep reference resolver should be used
+     * default - true
+     */
+    defaultVrDeepRef?: boolean;
     /**
      * Specify the working directory
      */

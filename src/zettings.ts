@@ -52,10 +52,16 @@ export interface Options {
   defaultMemoSourcePriority?: number;
 
   /**
-   * Specifies if the default module/object resolver should be used
+   * Specifies if the default reference resolver should be used
    * default - true
    */
-  defaultRsReference?: boolean;
+  defaultVrReference?: boolean;
+
+  /**
+   * Specifies if the default deep reference resolver should be used
+   * default - true
+   */
+  defaultVrDeepRef?: boolean;
 
   /**
    * Specify the working directory
@@ -120,10 +126,10 @@ export default class Zettings {
     this.lowestPriority = 0;
     this.pwd = options.pwd;
 
-    options.defaultMemoSource  = getFirstValid(options.defaultMemoSource, true);    
-    options.defaultEnvSource   = getFirstValid(options.defaultEnvSource,  true);
-    options.defaultRsReference = getFirstValid(options.defaultRsReference,   true);
-    
+    options.defaultMemoSource  = getFirstValid(options.defaultMemoSource,  true);    
+    options.defaultEnvSource   = getFirstValid(options.defaultEnvSource,   true);
+    options.defaultVrReference = getFirstValid(options.defaultVrReference, true);
+    options.defaultVrDeepRef   = getFirstValid(options.defaultVrDeepRef,   true);    
 
     let memoPriority = getFirstValid(options.defaultMemoSourcePriority, 1);
     let envPriority  = getFirstValid(options.defaultEnvSourcePriority,  5);
@@ -134,8 +140,11 @@ export default class Zettings {
     if (options.defaultEnvSource)
       this.addSource(new EnvSource(), envPriority, this.profile);
 
-    if (options.defaultRsReference)
+    if (options.defaultVrReference)
       this.addValueResolver(new VrReference({pwd: this.pwd}));      
+
+    if(options.defaultVrDeepRef) 
+      this.addValueResolver(new VrDeepRef({pwd: this.pwd}));
   }
 
 

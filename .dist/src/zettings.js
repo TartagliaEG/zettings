@@ -26,15 +26,18 @@ class Zettings {
         this.pwd = options.pwd;
         options.defaultMemoSource = getFirstValid(options.defaultMemoSource, true);
         options.defaultEnvSource = getFirstValid(options.defaultEnvSource, true);
-        options.defaultRsReference = getFirstValid(options.defaultRsReference, true);
+        options.defaultVrReference = getFirstValid(options.defaultVrReference, true);
+        options.defaultVrDeepRef = getFirstValid(options.defaultVrDeepRef, true);
         let memoPriority = getFirstValid(options.defaultMemoSourcePriority, 1);
         let envPriority = getFirstValid(options.defaultEnvSourcePriority, 5);
         if (options.defaultMemoSource)
             this.addSource(new src_memory_1.default({}), memoPriority, this.profile);
         if (options.defaultEnvSource)
             this.addSource(new src_env_1.default(), envPriority, this.profile);
-        if (options.defaultRsReference)
+        if (options.defaultVrReference)
             this.addValueResolver(new vr_reference_1.default({ pwd: this.pwd }));
+        if (options.defaultVrDeepRef)
+            this.addValueResolver(new vr_deep_reference_1.default({ pwd: this.pwd }));
     }
     /**
      * Add a ValueResolver to be applied each time the #get function is called.
