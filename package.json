@@ -1,6 +1,6 @@
 {
   "name": "zettings",
-  "version": "1.0.0",
+  "version": "0.2.1",
   "description": "",
   "main": ".dist/src/zettings.js",
   "typings": ".dist/src/zettings.d.ts",

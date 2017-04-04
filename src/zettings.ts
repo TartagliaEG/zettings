@@ -1,3 +1,4 @@
+import VrDeepRef from './value-resolver/vr-deep-reference';
 import EnvSource from './sources/src-env';
 import MemorySource from './sources/src-memory';
 import Logger from './utils/simple-logger';
@@ -388,8 +389,3 @@ export function getFirstValid(...values: any[]): any {
       return values[i];
   }
 }
-
-
-import VrDeepRef from './value-resolver/vr-deep-reference';
-const v = new VrDeepRef({pwd: __dirname + '/../test/value-resolver/'});
-v.resolve({ root: '${ref=./vr-reference-mock}' });

@@ -7,7 +7,7 @@ export default class MemorySource implements Source {
 
   constructor(options?: MemoryOptions) {    
     options = options || {};
-    this.name = options.name || 'JSON';
+    this.name = options.name || 'MEMORY';
   }
   
   

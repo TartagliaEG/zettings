@@ -5,7 +5,7 @@ class MemorySource {
     constructor(options) {
         this.json = {};
         options = options || {};
-        this.name = options.name || 'JSON';
+        this.name = options.name || 'MEMORY';
     }
     get(keys) {
         return _.get(this.json, keys);

@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const vr_deep_reference_1 = require("./value-resolver/vr-deep-reference");
 const src_env_1 = require("./sources/src-env");
 const src_memory_1 = require("./sources/src-memory");
 const simple_logger_1 = require("./utils/simple-logger");
@@ -197,7 +198,4 @@ function getFirstValid(...values) {
     }
 }
 exports.getFirstValid = getFirstValid;
-const vr_deep_reference_1 = require("./value-resolver/vr-deep-reference");
-const v = new vr_deep_reference_1.default({ pwd: __dirname + '/../test/value-resolver/' });
-v.resolve({ root: '${ref=./vr-reference-mock}' });
 //# sourceMappingURL=zettings.js.map
