@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": ".dist/src/zettings.js",
-  "typings": ".dist/src/declarations.d.ts",
+  "typings": ".dist/src/zettings.d.ts",
   "scripts": {
-    "start": "grunt start",
+    "start": "node .",
     "test":  "mocha --recursive .dist/test",
     "build": "grunt build",
     "watch": "grunt buildAndWatch",
