@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const vr_deep_reference_1 = require("./value-resolver/vr-deep-reference");
+const vr_map_1 = require("./value-resolver/vr-map");
 const src_env_1 = require("./sources/src-env");
 const src_memory_1 = require("./sources/src-memory");
 const simple_logger_1 = require("./utils/simple-logger");
@@ -29,6 +30,7 @@ class Zettings {
         options.defaultEnvSource = getFirstValid(options.defaultEnvSource, true);
         options.defaultVrReference = getFirstValid(options.defaultVrReference, true);
         options.defaultVrDeepRef = getFirstValid(options.defaultVrDeepRef, true);
+        options.defaultVrMap = getFirstValid(options.defaultVrMap, true);
         let memoPriority = getFirstValid(options.defaultMemoSourcePriority, 1);
         let envPriority = getFirstValid(options.defaultEnvSourcePriority, 5);
         if (options.defaultMemoSource)
@@ -39,6 +41,11 @@ class Zettings {
             this.addValueResolver(new vr_reference_1.default({ pwd: this.pwd }));
         if (options.defaultVrDeepRef)
             this.addValueResolver(new vr_deep_reference_1.default({ pwd: this.pwd }));
+        if (options.defaultVrMap) {
+            const map = new Map();
+            map.set('pwd', this.pwd);
+            this.addValueResolver(new vr_map_1.default({ map: map }));
+        }
     }
     /**
      * Add a ValueResolver to be applied each time the #get function is called.
@@ -46,6 +53,7 @@ class Zettings {
      * @param {ValueResolver} resolver - The resolver instance.
      **/
     addValueResolver(resolver) {
+        Log.i("New value resolver ->  { name: '" + resolver.name + "' }");
         this.valueResolvers.push(resolver);
     }
     /**
@@ -81,7 +89,7 @@ class Zettings {
             throw new Error("The name '" + source.name + "' already exists in the '" + profile + "' profile");
         }
         this.nameKeys[composedName] = true;
-        Log.d("New source added ->  { name: '" + source.name + "', profile: '" + profile + "' }");
+        Log.i("New source added ->  { name: '" + source.name + "', profile: '" + profile + "' }");
         this.sources.push({ priority: priority, profile, source: source });
         this.sources = this.sources.sort((sourceA, sourceB) => {
             return sourceA.priority - sourceB.priority;

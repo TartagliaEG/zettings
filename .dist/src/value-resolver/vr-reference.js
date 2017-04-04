@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Path = require("path");
 const _ = require("lodash");
 const simple_logger_1 = require("../utils/simple-logger");
-const NAME = 'TR-FUNCTION';
-const Log = new simple_logger_1.default('tr-function');
+const NAME = 'VR-REFERENCE';
+const Log = new simple_logger_1.default('vr-reference');
 /**
  * Load the module (or any sub property) specified by the "path" within the pattern ${ref=path}.
  * E.g:  ${ref=/path/to/the/module} OR ${ref=/path/to/the/module#subProperty}

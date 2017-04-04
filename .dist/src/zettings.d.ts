@@ -41,10 +41,15 @@ export interface Options {
      */
     defaultVrReference?: boolean;
     /**
-     * Specifies if the default deep reference resolver should be used
+     * Specifies if the default deep reference resolver should be used.
      * default - true
      */
     defaultVrDeepRef?: boolean;
+    /**
+     * Specifies if the default map resolve should be used. The default map contains only the pwd key.
+     * default - true
+     */
+    defaultVrMap?: boolean;
     /**
      * Specify the working directory
      */

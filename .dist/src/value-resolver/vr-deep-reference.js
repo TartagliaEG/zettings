@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vr_reference_1 = require("./vr-reference");
 const simple_logger_1 = require("../utils/simple-logger");
 const node_iteration_1 = require("../utils/node-iteration");
-const NAME = 'VR-DEEP_REFERENCE';
+const NAME = 'VR-DEEP-REFERENCE';
 const Log = new simple_logger_1.default('vr-deep-reference');
 /**
  * Resolve the references in nested objects

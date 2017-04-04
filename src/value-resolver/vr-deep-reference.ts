@@ -6,7 +6,7 @@ import * as _ from 'lodash';
 import Logger from '../utils/simple-logger';
 import {forEachLeaf} from '../utils/node-iteration';
 
-const NAME = 'VR-DEEP_REFERENCE';
+const NAME = 'VR-DEEP-REFERENCE';
 
 const Log = new Logger('vr-deep-reference');
 

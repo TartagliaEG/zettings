@@ -1,4 +1,5 @@
 import VrDeepRef from './value-resolver/vr-deep-reference';
+import VrMap from './value-resolver/vr-map';
 import EnvSource from './sources/src-env';
 import MemorySource from './sources/src-memory';
 import Logger from './utils/simple-logger';
@@ -59,10 +60,17 @@ export interface Options {
   defaultVrReference?: boolean;
 
   /**
-   * Specifies if the default deep reference resolver should be used
+   * Specifies if the default deep reference resolver should be used.
    * default - true
    */
   defaultVrDeepRef?: boolean;
+
+
+  /**
+   * Specifies if the default map resolve should be used. The default map contains only the pwd key. 
+   * default - true   
+   */
+  defaultVrMap?: boolean;
 
   /**
    * Specify the working directory
@@ -127,10 +135,11 @@ export default class Zettings {
     this.lowestPriority = 0;
     this.pwd = options.pwd;
 
-    options.defaultMemoSource  = getFirstValid(options.defaultMemoSource,  true);    
+    options.defaultMemoSource  = getFirstValid(options.defaultMemoSource,  true);
     options.defaultEnvSource   = getFirstValid(options.defaultEnvSource,   true);
     options.defaultVrReference = getFirstValid(options.defaultVrReference, true);
-    options.defaultVrDeepRef   = getFirstValid(options.defaultVrDeepRef,   true);    
+    options.defaultVrDeepRef   = getFirstValid(options.defaultVrDeepRef,   true);
+    options.defaultVrMap       = getFirstValid(options.defaultVrMap,       true);
 
     let memoPriority = getFirstValid(options.defaultMemoSourcePriority, 1);
     let envPriority  = getFirstValid(options.defaultEnvSourcePriority,  5);
@@ -146,6 +155,12 @@ export default class Zettings {
 
     if(options.defaultVrDeepRef) 
       this.addValueResolver(new VrDeepRef({pwd: this.pwd}));
+
+    if(options.defaultVrMap) {
+      const map = new Map<string, any>();
+      map.set('pwd', this.pwd);
+      this.addValueResolver(new VrMap({map: map}));
+    }
   }
 
 
@@ -155,6 +170,7 @@ export default class Zettings {
    * @param {ValueResolver} resolver - The resolver instance.
    **/
   public addValueResolver(resolver: ValueResolver): void {
+    Log.i("New value resolver ->  { name: '" + resolver.name + "' }");
     this.valueResolvers.push(resolver);
   }
 
@@ -241,7 +257,7 @@ export default class Zettings {
 
     this.nameKeys[composedName] = true;
 
-    Log.d("New source added ->  { name: '" + source.name + "', profile: '" + profile + "' }");    
+    Log.i("New source added ->  { name: '" + source.name + "', profile: '" + profile + "' }");
 
     this.sources.push({priority: priority, profile, source: source});
     this.sources = this.sources.sort((sourceA, sourceB) => {

@@ -90,8 +90,7 @@ describe("Zettings", function() {
       expect(Z.getf('key')).to.be.equals(2);
 
       Z.changeProfile(Z.DEF_PROFILE);
-      expect(Z.getf('key')).to.not.be.ok;
-    
+      expect(Z.getf('key')).to.not.be.ok;    
     });
 
 

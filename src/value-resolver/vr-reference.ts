@@ -3,9 +3,9 @@ import * as Path from 'path';
 import * as _ from 'lodash';
 import Logger from '../utils/simple-logger';
 
-const NAME = 'TR-FUNCTION';
+const NAME = 'VR-REFERENCE';
 
-const Log = new Logger('tr-function');
+const Log = new Logger('vr-reference');
 
 /** 
  * Load the module (or any sub property) specified by the "path" within the pattern ${ref=path}. 
