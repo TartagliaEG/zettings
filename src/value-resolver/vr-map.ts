@@ -31,8 +31,8 @@ export default class VrMap implements ValueResolver {
     if(!this.pattern.test(value))
       return false;
     
-    const content: string = value.split(this.pattern)[2]; 
-    return this.map.has(content);    
+    const content: string = value.split(this.pattern)[2];
+    return this.map.has(content);
   }
 }
 

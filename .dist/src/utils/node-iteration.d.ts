@@ -4,6 +4,7 @@ import { primitive } from './types';
  *
  * @param {any} node - The root node to start looking for leafs. The node itself could be a node.
  * @param {OnReachLeaf} onReachLeaf - The function called when the leaf is reached.
+ * @see {OnReachLeaf} Return true to stop the iteration
  */
 export declare function forEachLeaf(node: any, onReachLeaf: (leaf: primitive, mutate: (newValue: any) => void) => boolean): void;
 /**

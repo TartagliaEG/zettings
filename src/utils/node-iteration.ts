@@ -9,7 +9,8 @@ const CIRCULAR_KEY = '___$CIRCULAR';
  * Iterates over the given node and call the onReachLeaf fuction on each leaf.
  *
  * @param {any} node - The root node to start looking for leafs. The node itself could be a node.
- * @param {OnReachLeaf} onReachLeaf - The function called when the leaf is reached.
+ * @param {OnReachLeaf} onReachLeaf - The function called when the leaf is reached. 
+ * @see {OnReachLeaf} Return true to stop the iteration
  */
 export function forEachLeaf(node: any, onReachLeaf: (leaf: primitive, mutate: (newValue: any) => void) => boolean): void {
   const circularRefs = [];

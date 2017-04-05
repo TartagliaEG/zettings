@@ -206,8 +206,7 @@ describe("Zettings", function() {
       Z.getf("a");
       expect(spMock1.notCalled).to.be.true;
       expect(spMock3.called).to.be.true;
-    });
-    
+    });    
   });
   
   
@@ -225,7 +224,7 @@ describe("Zettings", function() {
     });
 
     expect(Z.count()).to.be.equals(0);
-  });
+  });  
 
 });
 

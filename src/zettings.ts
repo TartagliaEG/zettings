@@ -1,10 +1,11 @@
-import VrDeepRef from './value-resolver/vr-deep-reference';
+// import VrDeepRef from './value-resolver/vr-deep-reference';
 import VrMap from './value-resolver/vr-map';
 import EnvSource from './sources/src-env';
 import MemorySource from './sources/src-memory';
 import Logger from './utils/simple-logger';
 import VrReference from './value-resolver/vr-reference';
 import {isValid, isObject, isArray, isPrimitive} from './utils/type-check';
+import {forEachLeaf} from './utils/node-iteration';
 import * as _ from 'lodash';
 
 const Log = new Logger('Zettings');
@@ -153,8 +154,8 @@ export default class Zettings {
     if (options.defaultVrReference)
       this.addValueResolver(new VrReference({pwd: this.pwd}));
 
-    if(options.defaultVrDeepRef)
-      this.addValueResolver(new VrDeepRef({pwd: this.pwd}));
+    // if(options.defaultVrDeepRef)
+      // this.addValueResolver(new VrDeepRef({pwd: this.pwd}));
 
     if(options.defaultVrMap) {
       const map = new Map<string, any>();
@@ -329,20 +330,22 @@ export default class Zettings {
     for(let i = 0; i < this.sources.length; i++) {
       const prioritySource = this.sources[i];
       const source = prioritySource.source;
-
+      
       if(prioritySource.profile !== this.profile)
         continue;
 
-      const value = source.get(keys);
+      let value = source.get(keys);
 
       if (!isValid(value))
         continue;
-
-      // If the 'type' has not been set yet and the value isn't an object, we can break the loop (primitives and arrays won't be merged).
+      
+       // If the 'type' has not been set yet and the value isn't an object, we can break the loop (primitives and arrays won't be merged).
       if(!isValid(type) && !isObject(value)) {
         result = this.resolveValue(value, def);
         break;
       }
+
+      value = this.resolveValue(value, def);
 
       type = type || typeof value;
       result = result || {};
@@ -359,14 +362,22 @@ export default class Zettings {
 
   private resolveValue(value: any, def: any): any {
 
-    this.valueResolvers.some((resolver) => {
-      if (resolver.canResolve(value)) {
-        value = resolver.resolve(value);
-        return true;
-      }
+    forEachLeaf(value, (leaf, mutate) => {
+      for(let i = 0; i < this.valueResolvers.length; i++) {
+        const resolver = this.valueResolvers[i];
 
+        if(!resolver.canResolve(leaf))
+          continue;
+
+        const resolvedValue = resolver.resolve(leaf);
+
+        if(isPrimitive(value)) 
+          value = resolvedValue;
+        else
+          mutate(resolvedValue);
+      }
       return false;
-    });
+    });    
 
     return value === undefined ? def : value;
   }
@@ -405,8 +416,3 @@ export function getFirstValid(...values: any[]): any {
       return values[i];
   }
 }
-
-
-import {toLeaf} from './utils/node-iteration';
-const a = toLeaf(['0', 'test', '0'], 1);
-console.log(a);

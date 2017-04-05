@@ -1,12 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const vr_deep_reference_1 = require("./value-resolver/vr-deep-reference");
+// import VrDeepRef from './value-resolver/vr-deep-reference';
 const vr_map_1 = require("./value-resolver/vr-map");
 const src_env_1 = require("./sources/src-env");
 const src_memory_1 = require("./sources/src-memory");
 const simple_logger_1 = require("./utils/simple-logger");
 const vr_reference_1 = require("./value-resolver/vr-reference");
 const type_check_1 = require("./utils/type-check");
+const node_iteration_1 = require("./utils/node-iteration");
 const _ = require("lodash");
 const Log = new simple_logger_1.default('Zettings');
 class Zettings {
@@ -39,8 +40,8 @@ class Zettings {
             this.addSource(new src_env_1.default(), envPriority, this.profile);
         if (options.defaultVrReference)
             this.addValueResolver(new vr_reference_1.default({ pwd: this.pwd }));
-        if (options.defaultVrDeepRef)
-            this.addValueResolver(new vr_deep_reference_1.default({ pwd: this.pwd }));
+        // if(options.defaultVrDeepRef)
+        // this.addValueResolver(new VrDeepRef({pwd: this.pwd}));
         if (options.defaultVrMap) {
             const map = new Map();
             map.set('pwd', this.pwd);
@@ -150,7 +151,7 @@ class Zettings {
             const source = prioritySource.source;
             if (prioritySource.profile !== this.profile)
                 continue;
-            const value = source.get(keys);
+            let value = source.get(keys);
             if (!type_check_1.isValid(value))
                 continue;
             // If the 'type' has not been set yet and the value isn't an object, we can break the loop (primitives and arrays won't be merged).
@@ -158,6 +159,7 @@ class Zettings {
                 result = this.resolveValue(value, def);
                 break;
             }
+            value = this.resolveValue(value, def);
             type = type || typeof value;
             result = result || {};
             if (typeof value !== type)
@@ -167,10 +169,16 @@ class Zettings {
         return result;
     }
     resolveValue(value, def) {
-        this.valueResolvers.some((resolver) => {
-            if (resolver.canResolve(value)) {
-                value = resolver.resolve(value);
-                return true;
+        node_iteration_1.forEachLeaf(value, (leaf, mutate) => {
+            for (let i = 0; i < this.valueResolvers.length; i++) {
+                const resolver = this.valueResolvers[i];
+                if (!resolver.canResolve(leaf))
+                    continue;
+                const resolvedValue = resolver.resolve(leaf);
+                if (type_check_1.isPrimitive(value))
+                    value = resolvedValue;
+                else
+                    mutate(resolvedValue);
             }
             return false;
         });
@@ -206,7 +214,4 @@ function getFirstValid(...values) {
     }
 }
 exports.getFirstValid = getFirstValid;
-const node_iteration_1 = require("./utils/node-iteration");
-const a = node_iteration_1.toLeaf(['0', 'test', '0'], 1);
-console.log(a);
 //# sourceMappingURL=zettings.js.map
