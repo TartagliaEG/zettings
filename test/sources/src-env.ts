@@ -100,7 +100,10 @@ describe("EnvSource", function() {
     process.env['SERVER__0__1'] = '192.168.0.3';
 
     expect(env.get(['server'])).to.be.deep.equals([['192.168.0.2', '192.168.0.3']]);
+  });
 
+  it("Assert that configuring both uppercaseToken to any valid string and environmentCase to 'no_change' throw an error", function() {    
+    expect(() => { new EnvSource({environmentCase: 'no_change', uppercaseToken: '_'}) }).to.throw(Error);
   });
 
 });

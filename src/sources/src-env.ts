@@ -27,11 +27,11 @@ export default class EnvSource implements Source {
     this.name = options.name || 'ENV';
     this.environmentCase = options.environmentCase || 'upper';
     this.separatorToken = options.separatorToken || '__';
-    this.uppercaseToken = options.uppercaseToken;
+    this.uppercaseToken = options.uppercaseToken ||  (options.environmentCase !== 'no_change' ? '_' : undefined);
     this.prefix = options.prefix;
 
-    if(this.environmentCase === "no_change" && options.uppercaseToken)
-      throw Error("Conflicting configuration. You can't set an uppercaseToken altogether with 'no_change' environmentCase. Configuring the uppercaseToken means that any occurrence of the given token should be used to modify the provided keys, and configuring the environmentCase as 'no_change' means that the keys should be used without changes.");
+    if(this.environmentCase === "no_change" && this.uppercaseToken)
+      throw new Error("Conflicting configuration. You can't set an uppercaseToken altogether with 'no_change' environmentCase. Configuring the uppercaseToken means that any occurrence of the given token should be used to modify the provided keys, and configuring the environmentCase as 'no_change' means that the keys should be used without changes.");
 
     if(this.separatorToken === this.uppercaseToken)
       throw new Error("You can't configure two different tokens with the same value - {"  +

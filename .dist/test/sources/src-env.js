@@ -73,5 +73,8 @@ describe("EnvSource", function () {
         process.env['SERVER__0__1'] = '192.168.0.3';
         chai_1.expect(env.get(['server'])).to.be.deep.equals([['192.168.0.2', '192.168.0.3']]);
     });
+    it("Assert that configuring both uppercaseToken to any valid string and environmentCase to 'no_change' throw an error", function () {
+        chai_1.expect(() => { new src_env_1.default({ environmentCase: 'no_change', uppercaseToken: '_' }); }).to.throw(Error);
+    });
 });
 //# sourceMappingURL=src-env.js.map
