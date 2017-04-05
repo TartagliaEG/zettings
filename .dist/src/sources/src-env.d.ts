@@ -1,10 +1,19 @@
 import { Source } from '../zettings';
+export interface Dependencies {
+    toUppercase: (keys: string[], token: string) => string[];
+    safeReplace: (text: string, replacements: {
+        key: string;
+        replaceBy: string;
+    }[]) => string;
+    deepAssign: (props: string[], value: any, root?: Object | Array<any>) => Object | Array<any>;
+}
 export default class EnvSource implements Source {
     readonly name: string;
     private readonly environmentCase;
     private readonly separatorToken;
     private readonly uppercaseToken;
     private readonly prefix;
+    private readonly deps;
     constructor(options?: EnvOptions);
     get(keys: string[]): any;
     /**
@@ -42,5 +51,7 @@ export interface EnvOptions {
     separatorToken?: string;
     /** Specifies a prefix to be used in all keys. Defaults to '' **/
     prefix?: string;
+    /** Optional function dependencies */
+    dependencies?: Dependencies;
 }
 export declare type LetterCase = 'upper' | 'lower' | 'no_change';

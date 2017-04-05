@@ -20,6 +20,11 @@ class EnvSource {
             throw new Error("You can't configure two different tokens with the same value - {" +
                 "separatorToken: " + this.separatorToken + ", " +
                 "uppercaseToken: " + this.uppercaseToken + "}");
+        this.deps = options.dependencies || {
+            safeReplace: text_replacements_1.safeReplace,
+            toUppercase: text_replacements_1.toUppercase,
+            deepAssign: node_iteration_1.toLeaf
+        };
     }
     get(keys) {
         keys = [].concat(keys); // clone
@@ -51,10 +56,10 @@ class EnvSource {
             const replacements = [{ key: this.separatorToken, replaceBy: SEPARATOR_TEMP }];
             if (this.uppercaseToken)
                 replacements.push({ key: this.uppercaseToken, replaceBy: UPPERCASE_TEMP });
-            remaining = text_replacements_1.safeReplace(remaining, replacements);
+            remaining = this.deps.safeReplace(remaining, replacements);
             let objKeys = remaining.split(SEPARATOR_TEMP);
-            objKeys = this.uppercaseToken ? text_replacements_1.toUppercase(objKeys, UPPERCASE_TEMP) : objKeys;
-            result = node_iteration_1.toLeaf(objKeys, process.env[envKey], result);
+            objKeys = this.uppercaseToken ? this.deps.toUppercase(objKeys, UPPERCASE_TEMP) : objKeys;
+            result = this.deps.deepAssign(objKeys, process.env[envKey], result);
         }
         ;
         return result;

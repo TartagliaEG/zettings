@@ -13,4 +13,7 @@ export declare function forEachLeaf(node: any, onReachLeaf: (leaf: primitive, mu
  * @returns {boolean} - Return true to stop the iteration or false to continue.
  */
 export declare type OnReachLeaf = (leaf: primitive, mutate: (newValue: any) => void) => boolean;
+/**
+ * Transform the keys in a nested object or array containing the value parâmeter.
+ */
 export declare function toLeaf(keys: string[], value: any, root?: any): Object;

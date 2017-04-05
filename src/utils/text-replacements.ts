@@ -8,13 +8,13 @@ const Log = new Logger('safe-replace');
  * @param {replacement[]} replacements - An array of replacements to be applied in the given text
  * @return {string} The modified text
  */
-export function safeReplace(text: string, replacements: {key: string, replaceBy: string}[]) {
+export function safeReplace(text: string, replacements: {key: string, replaceBy: string}[]): string {
   return _safeReplace(text, replacements);
 }
 
 type Replacement = {key: string, replaceBy: string, skipThisRound?: boolean, used?: boolean};
 
-function _safeReplace(text: string, replacements: Replacement[]) {
+function _safeReplace(text: string, replacements: Replacement[]): string {
 
   replacements.forEach((outerRep) => {
     if(outerRep.used)

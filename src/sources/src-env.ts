@@ -1,14 +1,18 @@
 import {Source} from '../zettings';
 import Logger from '../utils/simple-logger';
-import {isNumeric} from '../utils/type-check';
 import {safeReplace, toUppercase, replaceAll} from '../utils/text-replacements';
 import {toLeaf} from '../utils/node-iteration';
-import * as _ from 'lodash';
 
 const Log = new Logger('src-env');
 
 const SEPARATOR_TEMP = "§§";
 const UPPERCASE_TEMP = "¬¬";
+
+export interface Dependencies {
+  toUppercase: (keys: string[], token: string) => string[];
+  safeReplace: (text: string, replacements: {key: string, replaceBy: string}[]) => string;
+  deepAssign: (props: string[], value: any, root?: Object|Array<any>) => Object|Array<any>;
+}
 
 export default class EnvSource implements Source {
   public readonly name: string;
@@ -16,6 +20,7 @@ export default class EnvSource implements Source {
   private readonly separatorToken: string;
   private readonly uppercaseToken: string;
   private readonly prefix: string;
+  private readonly deps: Dependencies;
 
   constructor(options?: EnvOptions) {
     options = options || {};
@@ -32,6 +37,12 @@ export default class EnvSource implements Source {
       throw new Error("You can't configure two different tokens with the same value - {"  +
         "separatorToken: " + this.separatorToken + ", " +
         "uppercaseToken: " + this.uppercaseToken + "}");
+
+    this.deps = options.dependencies || {
+      safeReplace: safeReplace,
+      toUppercase: toUppercase,
+      deepAssign: toLeaf
+    };
   }
 
   public get(keys: string[]): any {
@@ -76,12 +87,12 @@ export default class EnvSource implements Source {
       if(this.uppercaseToken)
         replacements.push({key: this.uppercaseToken, replaceBy: UPPERCASE_TEMP});
 
-      remaining = safeReplace(remaining, replacements);
+      remaining = this.deps.safeReplace(remaining, replacements);
 
       let objKeys = remaining.split(SEPARATOR_TEMP);
-      objKeys = this.uppercaseToken ? toUppercase(objKeys, UPPERCASE_TEMP) : objKeys;
+      objKeys = this.uppercaseToken ? this.deps.toUppercase(objKeys, UPPERCASE_TEMP) : objKeys;
 
-      result = toLeaf(objKeys, process.env[envKey], result);
+      result = this.deps.deepAssign(objKeys, process.env[envKey], result);
     };
 
     return result;
@@ -144,6 +155,9 @@ export interface EnvOptions {
 
   /** Specifies a prefix to be used in all keys. Defaults to '' **/
   prefix?: string;
+
+  /** Optional function dependencies */
+  dependencies?: Dependencies;
 }
 
 export type LetterCase = 'upper' | 'lower' | 'no_change';

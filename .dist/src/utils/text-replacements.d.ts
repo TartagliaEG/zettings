@@ -8,7 +8,7 @@
 export declare function safeReplace(text: string, replacements: {
     key: string;
     replaceBy: string;
-}[]): any;
+}[]): string;
 /**
  * Replace characters following the 'ucaseToken' by its uppercase equivalent.
  * @param {string[]} keys - Array of keys

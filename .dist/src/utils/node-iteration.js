@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const _ = require("lodash");
 const type_check_1 = require("./type-check");
 const CIRCULAR_KEY = '___$CIRCULAR';
 /**
@@ -40,23 +41,14 @@ function _forEachLeaf(node, onReachLeaf, circularRefs) {
     }
     return false;
 }
-const type_check_2 = require("./type-check");
+/**
+ * Transform the keys in a nested object or array containing the value parâmeter.
+ */
 function toLeaf(keys, value, root) {
     if (keys.length === 0)
         throw new Error("Can't convert an empty key list to a node leaf");
-    root = root || (type_check_2.isNumeric(keys[0]) ? [] : {});
-    let current = root;
-    for (let i = 0; i < keys.length; i++) {
-        const key = keys[i];
-        const next = keys[i + 1];
-        if (next === undefined) {
-            current[key] = value;
-            break;
-        }
-        current[key] = current[key] || (type_check_2.isNumeric(next) ? [] : {});
-        current = current[key];
-    }
-    return root;
+    root = root || (type_check_1.isNumeric(keys[0]) ? [] : {});
+    return _.set(root, keys, value);
 }
 exports.toLeaf = toLeaf;
 //# sourceMappingURL=node-iteration.js.map

@@ -1,5 +1,8 @@
+import * as _ from 'lodash';
+
 import {primitive} from './types';
-import {isObject, isArray} from './type-check';
+import {isObject, isArray, isNumeric} from './type-check';
+
 const CIRCULAR_KEY = '___$CIRCULAR';
 
 /**
@@ -55,25 +58,13 @@ function _forEachLeaf(node: Array<any>|Object, onReachLeaf: OnReachLeaf, circula
   return false;
 }
 
-import {isNumeric} from './type-check';
-
+/**
+ * Transform the keys in a nested object or array containing the value parâmeter.
+ */
 export function toLeaf(keys: string[], value: any, root?: any): Object {
   if(keys.length === 0)
     throw new Error("Can't convert an empty key list to a node leaf");
 
   root = root || (isNumeric(keys[0]) ? [] : {});
-  let current = root;
-  for(let i = 0; i < keys.length; i++) {
-    const key = keys[i];
-    const next = keys[i+1];
-
-    if(next === undefined) {
-      current[key] = value;
-      break;
-    }
-
-    current[key] = current[key] || (isNumeric(next) ? [] : {});
-    current = current[key]
-  }
-  return root;
+  return _.set(root, keys, value);
 }
