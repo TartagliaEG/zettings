@@ -60,5 +60,31 @@ describe("NodeIteration", function () {
             chai_1.expect(onReachLeaf.calledThrice).to.be.true;
         });
     });
+    describe('.toLeaf', function () {
+        it("Assert that strings become objects and numbers become .", function () {
+            chai_1.expect(node_iteration_1.toLeaf(['obj'], 1)).to.be.deep.equals({ obj: 1 });
+            chai_1.expect(node_iteration_1.toLeaf(['0'], 1)).to.be.deep.equals([1]);
+        });
+        it("Assert that multiple keys resolves to nested objects/arrays", function () {
+            chai_1.expect(node_iteration_1.toLeaf(['obj', 'key1', 'key2'], 1)).to.be.deep.equals({ obj: { key1: { key2: 1 } } });
+            chai_1.expect(node_iteration_1.toLeaf(['0', '0', '0'], 1)).to.be.deep.equals([[[1]]]);
+            chai_1.expect(node_iteration_1.toLeaf(['0', 'test', '0'], 1)).to.be.deep.equals([{ test: [1] }]);
+            chai_1.expect(node_iteration_1.toLeaf(['0', 'test', 'test'], 1)).to.be.deep.equals([{ test: { test: 1 } }]);
+        });
+        it("Assert that the root parameter could be reused", function () {
+            const root = {};
+            node_iteration_1.toLeaf(['first', 'key'], 1, root);
+            node_iteration_1.toLeaf(['second', 'key'], 2, root);
+            node_iteration_1.toLeaf(['arr', '0'], 1, root);
+            node_iteration_1.toLeaf(['arr', '1'], 2, root);
+            node_iteration_1.toLeaf(['arr', '2'], 3, root);
+            const expected = {
+                first: { key: 1 },
+                second: { key: 2 },
+                arr: [1, 2, 3]
+            };
+            chai_1.expect(root).to.be.deep.equals(expected);
+        });
+    });
 });
 //# sourceMappingURL=node-iteration.js.map

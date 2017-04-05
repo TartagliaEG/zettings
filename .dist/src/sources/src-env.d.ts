@@ -5,10 +5,6 @@ export default class EnvSource implements Source {
     private readonly separatorToken;
     private readonly uppercaseToken;
     private readonly prefix;
-    private readonly SEPARATOR_TEMP;
-    private readonly SEPARATOR_REGX;
-    private readonly UPPERCASE_TEMP;
-    private readonly UPPERCASE_REGX;
     constructor(options?: EnvOptions);
     get(keys: string[]): any;
     /**
@@ -19,16 +15,14 @@ export default class EnvSource implements Source {
     private getAsObject(key);
     /**
      * Prefix all uppercase letters with the configured uppercaseToken.
-     *
-     * @param {string} key
+     * @param {string[]} keys
      */
-    private applyUppercaseToken(key);
+    private insertUppercaseToken(keys);
     /**
-     * Change the key letter case to match with the environment variables
-     *
-     * @param {string} key
+     * Change the key letter case to the environment variables letter case
+     * @param {string[]} keys
      */
-    private applyEnvironmentCase(key);
+    private applyEnvironmentCase(keys);
 }
 export interface EnvOptions {
     name?: string;

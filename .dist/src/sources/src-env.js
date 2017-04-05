@@ -1,27 +1,33 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const simple_logger_1 = require("../utils/simple-logger");
-const type_check_1 = require("../utils/type-check");
+const text_replacements_1 = require("../utils/text-replacements");
+const node_iteration_1 = require("../utils/node-iteration");
 const Log = new simple_logger_1.default('src-env');
+const SEPARATOR_TEMP = "§§";
+const UPPERCASE_TEMP = "¬¬";
 class EnvSource {
     constructor(options) {
-        this.SEPARATOR_TEMP = "§§";
-        this.SEPARATOR_REGX = /§§/;
-        this.UPPERCASE_TEMP = "¬¬";
-        this.UPPERCASE_REGX = /(?=¬¬)/;
         options = options || {};
         this.name = options.name || 'ENV';
         this.environmentCase = options.environmentCase || 'upper';
         this.separatorToken = options.separatorToken || '__';
         this.uppercaseToken = options.uppercaseToken;
         this.prefix = options.prefix;
+        if (this.environmentCase === "no_change" && options.uppercaseToken)
+            throw Error("Conflicting configuration. You can't set an uppercaseToken altogether with 'no_change' environmentCase. Configuring the uppercaseToken means that any occurrence of the given token should be used to modify the provided keys, and configuring the environmentCase as 'no_change' means that the keys should be used without changes.");
+        if (this.separatorToken === this.uppercaseToken)
+            throw new Error("You can't configure two different tokens with the same value - {" +
+                "separatorToken: " + this.separatorToken + ", " +
+                "uppercaseToken: " + this.uppercaseToken + "}");
     }
     get(keys) {
+        keys = [].concat(keys); // clone
         if (this.prefix)
             keys = [this.prefix].concat(keys);
-        let key = keys.join(this.separatorToken);
-        key = this.applyUppercaseToken(key);
-        key = this.applyEnvironmentCase(key);
+        this.insertUppercaseToken(keys);
+        this.applyEnvironmentCase(keys);
+        const key = keys.join(this.separatorToken);
         if (process.env[key] !== undefined)
             return process.env[key];
         return this.getAsObject(key);
@@ -33,83 +39,54 @@ class EnvSource {
      */
     getAsObject(key) {
         let result;
-        Object.keys(process.env).forEach((envKey) => {
+        const allEnvKeys = Object.keys(process.env);
+        for (let i = 0; i < allEnvKeys.length; i++) {
+            const envKey = allEnvKeys[i];
             const start = key + this.separatorToken;
             if (!envKey.startsWith(start))
-                return;
-            result = result || {};
+                continue;
             let remaining = envKey.replace(start, '');
-            // Replace the tokens to prevent collision
-            if (this.uppercaseToken) {
-                // Check whether one of the tokens contains the other
-                if (this.separatorToken.indexOf(this.uppercaseToken) !== -1) {
-                    remaining = remaining.replace(this.separatorToken, this.SEPARATOR_TEMP);
-                    remaining = remaining.replace(this.uppercaseToken, this.UPPERCASE_TEMP);
-                }
-                else if (this.uppercaseToken.indexOf(this.separatorToken) !== -1) {
-                    remaining = remaining.replace(this.uppercaseToken, this.UPPERCASE_TEMP);
-                    remaining = remaining.replace(this.separatorToken, this.SEPARATOR_TEMP);
-                }
-            }
-            else {
-                remaining = remaining.replace(this.separatorToken, this.SEPARATOR_TEMP);
-            }
-            remaining = remaining.toLocaleLowerCase();
-            // Change the key case.
-            if (this.environmentCase !== 'no_change') {
-                let ucase = '';
-                remaining.split(this.UPPERCASE_REGX).forEach((key) => {
-                    if (!key.startsWith(this.UPPERCASE_TEMP))
-                        return ucase += key;
-                    const tempKey = key.replace(this.UPPERCASE_TEMP, '');
-                    if (tempKey.length === 0) {
-                        Log.w("The uppercase token is being used as the last character: " + envKey);
-                        return;
-                    }
-                    ucase += tempKey.charAt(0).toUpperCase() + tempKey.slice(1);
-                });
-                remaining = ucase;
-            }
-            // Transform the environment key in an object
-            let currNode = result;
-            remaining.split(this.SEPARATOR_REGX).forEach((key, idx, arr) => {
-                if (key.length === 0)
-                    return;
-                currNode[key] = currNode[key] || type_check_1.isNumeric(key) ? [] : {};
-                if (idx === arr.length - 1)
-                    currNode[key] = process.env[envKey];
-                currNode = currNode[key];
-            });
-        });
+            if (this.environmentCase !== 'no_change')
+                remaining = remaining.toLowerCase();
+            const replacements = [{ key: this.separatorToken, replaceBy: SEPARATOR_TEMP }];
+            if (this.uppercaseToken)
+                replacements.push({ key: this.uppercaseToken, replaceBy: UPPERCASE_TEMP });
+            remaining = text_replacements_1.safeReplace(remaining, replacements);
+            let objKeys = remaining.split(SEPARATOR_TEMP);
+            objKeys = this.uppercaseToken ? text_replacements_1.toUppercase(objKeys, UPPERCASE_TEMP) : objKeys;
+            result = node_iteration_1.toLeaf(objKeys, process.env[envKey], result);
+        }
+        ;
         return result;
     }
     /**
      * Prefix all uppercase letters with the configured uppercaseToken.
-     *
-     * @param {string} key
+     * @param {string[]} keys
      */
-    applyUppercaseToken(key) {
+    insertUppercaseToken(keys) {
         if (!this.uppercaseToken)
-            return key;
+            return;
         const ucase = /[A-Z]/;
-        let newKey = '';
-        key.split('').forEach((char) => {
-            newKey += ucase.test(char) ? this.uppercaseToken + char : char;
-            ;
-        });
-        return newKey;
+        for (let i = 0; i < keys.length; i++) {
+            let newKey = '';
+            keys[i].split('').forEach((char) => {
+                newKey += ucase.test(char) ? this.uppercaseToken + char : char;
+                ;
+            });
+            keys[i] = newKey;
+        }
     }
     /**
-     * Change the key letter case to match with the environment variables
-     *
-     * @param {string} key
+     * Change the key letter case to the environment variables letter case
+     * @param {string[]} keys
      */
-    applyEnvironmentCase(key) {
-        if (this.environmentCase === 'upper')
-            key = key.toUpperCase();
-        else if (this.environmentCase === 'lower')
-            key = key.toLowerCase();
-        return key;
+    applyEnvironmentCase(keys) {
+        for (let i = 0; i < keys.length; i++) {
+            if (this.environmentCase === 'upper')
+                keys[i] = keys[i].toUpperCase();
+            else if (this.environmentCase === 'lower')
+                keys[i] = keys[i].toLowerCase();
+        }
     }
 }
 exports.default = EnvSource;

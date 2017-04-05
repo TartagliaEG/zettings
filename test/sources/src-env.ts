@@ -7,7 +7,7 @@ import {setLoggerLevel, LVL_NONE} from '../../src/utils/simple-logger';
 setLoggerLevel(LVL_NONE);
 
 describe("EnvSource", function() {
-  
+
   it("Assert that, by default, keys are joined by two underscores and toUpperCase is called.", function() {
     const env: EnvSource = new EnvSource();
     process.env.TEST__KEY = "1";
@@ -25,7 +25,7 @@ describe("EnvSource", function() {
 
 
   it("Assert that changing the the default letter case has the expected effect.", function() {
-    const env1: EnvSource = new EnvSource({environmentCase: "lower"});    
+    const env1: EnvSource = new EnvSource({environmentCase: "lower"});
     process.env.test__key = "1";
     expect(env1.get(["test", "key"])).to.be.equals("1");
     delete process.env.test__key;
@@ -46,7 +46,7 @@ describe("EnvSource", function() {
 
 
   it("Assert that the custom name will be used.", function() {
-    const env: EnvSource = new EnvSource({name: "custom name"});    
+    const env: EnvSource = new EnvSource({name: "custom name"});
     expect(env.name).to.be.equals("custom name");
   });
 
@@ -62,17 +62,45 @@ describe("EnvSource", function() {
 
     delete process.env['SEGMENT1__SEGMENT2__SEGMENT3'];
     delete process.env['SEGMENT1__OTHER'];
-  }); 
+  });
 
 
   it("Assert that the uppercase token will be applied to the resulting object.", function() {
-    process.env['SERVER__HOST_NAME'] = 'test';    
+    process.env['SERVER__HOST_NAME'] = 'test';
     const env: EnvSource = new EnvSource({uppercaseToken: '_'});
 
     expect(env.get(['server', 'hostName'])).to.be.equals('test');
     expect(env.get(['server'])).to.be.deep.equals({hostName: 'test'});
 
-    delete process.env['SERVER__HOST_NAME'];    
-  }); 
-  
+    delete process.env['SERVER__HOST_NAME'];
+  });
+
+  it("Assert that numbers are resolved to arrays", function() {
+    const env: EnvSource = new EnvSource();
+
+    process.env['SERVER__CONNECTIONS__0'] = '192.168.0.2';
+    process.env['SERVER__CONNECTIONS__1'] = '192.168.0.3';
+    expect(env.get(['server'])).to.be.deep.equals({connections: ['192.168.0.2', '192.168.0.3']});
+
+    delete process.env['SERVER__CONNECTIONS__0'];
+    delete process.env['SERVER__CONNECTIONS__1'];
+
+    process.env['SERVER__CONNECTIONS__0__IP'] = '192.168.0.2';
+    process.env['SERVER__CONNECTIONS__1__IP'] = '192.168.0.3';
+    expect(env.get(['server'])).to.be.deep.equals({connections: [{ip: '192.168.0.2'}, {ip: '192.168.0.3'}]});
+
+    delete process.env['SERVER__CONNECTIONS__0__IP'];
+    delete process.env['SERVER__CONNECTIONS__1__IP'];
+  });
+
+  it("Assert that multiples numbers in the same key are resolved to nested arrays", function() {
+    const env: EnvSource = new EnvSource();
+
+    process.env['SERVER__0__0'] = '192.168.0.2';
+    process.env['SERVER__0__1'] = '192.168.0.3';
+
+    expect(env.get(['server'])).to.be.deep.equals([['192.168.0.2', '192.168.0.3']]);
+
+  });
+
 });

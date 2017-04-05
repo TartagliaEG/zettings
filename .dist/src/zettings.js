@@ -206,4 +206,7 @@ function getFirstValid(...values) {
     }
 }
 exports.getFirstValid = getFirstValid;
+const node_iteration_1 = require("./utils/node-iteration");
+const a = node_iteration_1.toLeaf(['0', 'test', '0'], 1);
+console.log(a);
 //# sourceMappingURL=zettings.js.map

@@ -54,5 +54,24 @@ describe("EnvSource", function () {
         chai_1.expect(env.get(['server'])).to.be.deep.equals({ hostName: 'test' });
         delete process.env['SERVER__HOST_NAME'];
     });
+    it("Assert that numbers are resolved to arrays", function () {
+        const env = new src_env_1.default();
+        process.env['SERVER__CONNECTIONS__0'] = '192.168.0.2';
+        process.env['SERVER__CONNECTIONS__1'] = '192.168.0.3';
+        chai_1.expect(env.get(['server'])).to.be.deep.equals({ connections: ['192.168.0.2', '192.168.0.3'] });
+        delete process.env['SERVER__CONNECTIONS__0'];
+        delete process.env['SERVER__CONNECTIONS__1'];
+        process.env['SERVER__CONNECTIONS__0__IP'] = '192.168.0.2';
+        process.env['SERVER__CONNECTIONS__1__IP'] = '192.168.0.3';
+        chai_1.expect(env.get(['server'])).to.be.deep.equals({ connections: [{ ip: '192.168.0.2' }, { ip: '192.168.0.3' }] });
+        delete process.env['SERVER__CONNECTIONS__0__IP'];
+        delete process.env['SERVER__CONNECTIONS__1__IP'];
+    });
+    it("Assert that multiples numbers in the same key are resolved to nested arrays", function () {
+        const env = new src_env_1.default();
+        process.env['SERVER__0__0'] = '192.168.0.2';
+        process.env['SERVER__0__1'] = '192.168.0.3';
+        chai_1.expect(env.get(['server'])).to.be.deep.equals([['192.168.0.2', '192.168.0.3']]);
+    });
 });
 //# sourceMappingURL=src-env.js.map

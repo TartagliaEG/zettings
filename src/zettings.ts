@@ -30,7 +30,7 @@ export interface Options {
   profile?: string,
 
   /**
-   * Specifies if a default EnvSource should be created. 
+   * Specifies if a default EnvSource should be created.
    * default - true
    */
   defaultEnvSource?: boolean;
@@ -67,8 +67,8 @@ export interface Options {
 
 
   /**
-   * Specifies if the default map resolve should be used. The default map contains only the pwd key. 
-   * default - true   
+   * Specifies if the default map resolve should be used. The default map contains only the pwd key.
+   * default - true
    */
   defaultVrMap?: boolean;
 
@@ -76,14 +76,14 @@ export interface Options {
    * Specify the working directory
    */
   pwd: string
-  
+
 }
 
 
 interface PrioritySource {
   readonly priority: number;
   readonly profile: string;
-  readonly source: Source;  
+  readonly source: Source;
 }
 
 
@@ -130,7 +130,7 @@ export default class Zettings {
   /**
    * @see Options
    */
-  constructor(options: Options) {    
+  constructor(options: Options) {
     this.profile = options.profile || this.DEF_PROFILE;
     this.lowestPriority = 0;
     this.pwd = options.pwd;
@@ -144,16 +144,16 @@ export default class Zettings {
     let memoPriority = getFirstValid(options.defaultMemoSourcePriority, 1);
     let envPriority  = getFirstValid(options.defaultEnvSourcePriority,  5);
 
-    if (options.defaultMemoSource) 
+    if (options.defaultMemoSource)
       this.addSource(new MemorySource({}), memoPriority, this.profile);
-    
+
     if (options.defaultEnvSource)
       this.addSource(new EnvSource(), envPriority, this.profile);
 
     if (options.defaultVrReference)
-      this.addValueResolver(new VrReference({pwd: this.pwd}));      
+      this.addValueResolver(new VrReference({pwd: this.pwd}));
 
-    if(options.defaultVrDeepRef) 
+    if(options.defaultVrDeepRef)
       this.addValueResolver(new VrDeepRef({pwd: this.pwd}));
 
     if(options.defaultVrMap) {
@@ -164,9 +164,9 @@ export default class Zettings {
   }
 
 
-  /** 
+  /**
    * Add a ValueResolver to be applied each time the #get function is called.
-   * 
+   *
    * @param {ValueResolver} resolver - The resolver instance.
    **/
   public addValueResolver(resolver: ValueResolver): void {
@@ -177,7 +177,7 @@ export default class Zettings {
 
   /**
    * Adds a new source to the current Zettings instance.
-   * 
+   *
    * @param {Source} source - The new source instance.
    * default priority       - last
    * default profile        - default configured profile
@@ -187,17 +187,17 @@ export default class Zettings {
 
   /**
    * Adds a new source to the current Zettings instance.
-   * 
-   * @param {Source} source   - The new source instance.   
-   * @param {string} profile  - The source profile 
+   *
+   * @param {Source} source   - The new source instance.
+   * @param {string} profile  - The source profile
    * default priority         - last
-   */ 
+   */
   public addSource(source: Source, profile: string): void;
 
 
   /**
    * Adds a new source to the current Zettings instance.
-   * 
+   *
    * @param {Source} source     - The new source instance.
    * @param {number} priority   - The source priority.
    * default profile            - default configured profile
@@ -205,16 +205,16 @@ export default class Zettings {
   public addSource(source: Source, priority: number): void;
 
 
-  /**      
+  /**
    * Adds a new source to the current Zettings instance.
-   * 
+   *
    * @param {Source} source     - The new source instance.
    * @param {number} priority   - The source priority.
-   * @param {string} profile    - The source profile       
+   * @param {string} profile    - The source profile
    */
   public addSource(source: Source, priority: number, profile: string): void;
 
-  
+
   /**
    * @see addSource(source: Source): void;
    * @see addSource(source: Source, profile: string): void;
@@ -262,12 +262,12 @@ export default class Zettings {
     this.sources.push({priority: priority, profile, source: source});
     this.sources = this.sources.sort((sourceA, sourceB) => {
       return sourceA.priority - sourceB.priority;
-    });    
-  } 
+    });
+  }
 
   /**
-   * Retrieve the number of sources associated with the given profile. 
-   * 
+   * Retrieve the number of sources associated with the given profile.
+   *
    * @param {string} [profile] - The profile. defaults to "total".
    */
   public count(profile?: string): number {
@@ -276,17 +276,17 @@ export default class Zettings {
   }
 
   /**
-   * Change the current configured profile. Only Sources added with the given profile will be used.   
+   * Change the current configured profile. Only Sources added with the given profile will be used.
    * @param {string} profile The new profile.
    */
   public changeProfile(profile: string): void {
     this.profile = profile;
   }
-  
-  
+
+
   /**
    * Retrieve the value associated with the given key from the first matching source.
-   * 
+   *
    * @param {string} key - The key whose associated value is to be returned.
    * @param {any} [def]  - A default value used when no value was found.
    */
@@ -298,14 +298,14 @@ export default class Zettings {
       const prioritySource = this.sources[i];
       const source = prioritySource.source;
 
-      if(prioritySource.profile !== this.profile) 
+      if(prioritySource.profile !== this.profile)
         continue;
 
       const value = source.get(keys);
-      
+
       if (value === undefined)
         continue;
-      
+
       result = value;
       break;
     }
@@ -313,11 +313,11 @@ export default class Zettings {
     return this.resolveValue(result, def);
   }
 
-  /**   
-   * Retrieve the value associated with the given key. If the first source returns a primitive or an array, it will be returned. 
+  /**
+   * Retrieve the value associated with the given key. If the first source returns a primitive or an array, it will be returned.
    * Otherwise, if the first source returns an object, the other source will be queried and have its results merged. The properties
    * from the first source have higher priority. If the other sources return primitives or arrays, they will be ignored.
-   * 
+   *
    * @param {string} key - The key whose associated value is to be returned.
    * @param {any} [def]  - A default value used when no value was found.
    */
@@ -330,11 +330,11 @@ export default class Zettings {
       const prioritySource = this.sources[i];
       const source = prioritySource.source;
 
-      if(prioritySource.profile !== this.profile) 
+      if(prioritySource.profile !== this.profile)
         continue;
 
       const value = source.get(keys);
-      
+
       if (!isValid(value))
         continue;
 
@@ -348,8 +348,8 @@ export default class Zettings {
       result = result || {};
 
       if(typeof value !== type)
-        continue;     
-      
+        continue;
+
       result = _.merge({}, value, result);
     }
 
@@ -357,7 +357,7 @@ export default class Zettings {
   }
 
 
-  private resolveValue(value: any, def: any): any {    
+  private resolveValue(value: any, def: any): any {
 
     this.valueResolvers.some((resolver) => {
       if (resolver.canResolve(value)) {
@@ -374,7 +374,7 @@ export default class Zettings {
 
   /**
    * Associate the value with the given key.
-   * 
+   *
    * @param {string} key - The mapping key
    * @param {any} value  - The value to be saved
    * @throws {Error}     - An error will be thrown if there is no source that handles this operation
@@ -385,7 +385,7 @@ export default class Zettings {
 
     for(let i = 0; i < this.sources.length; i++) {
       const prioritySource = this.sources[i];
-      const source = prioritySource.source;      
+      const source = prioritySource.source;
 
       if(typeof source.set == "function" && this.profile == prioritySource.profile) {
         isSetSupported = true;
@@ -405,3 +405,8 @@ export function getFirstValid(...values: any[]): any {
       return values[i];
   }
 }
+
+
+import {toLeaf} from './utils/node-iteration';
+const a = toLeaf(['0', 'test', '0'], 1);
+console.log(a);
