@@ -16,4 +16,4 @@ export function isValid(value: any): boolean {
   return value !== null && value !== undefined;
 }
 
-export {isArray};
+export { isArray };

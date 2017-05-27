@@ -13,7 +13,7 @@ module.exports = function(grunt) {
       src:  { expand: true, cwd: "src",  src: "**", filter: copyFilter, dest: '.dist/src'  },
       test: { expand: true, cwd: "test", src: "**", filter: copyFilter, dest: '.dist/test' }
     },
-    
+
     ts: {  // https://github.com/TypeStrong/grunt-ts
       options: {
         target: 'es6',
@@ -22,28 +22,15 @@ module.exports = function(grunt) {
         outFile: '.dist/src/zettings.js',
         declaration: true,
         removeComments: false
-      },      
-      fastCompile:  { src: ['./{src,test}/**/*.ts'], outDir: '.dist/', options: { fast: 'always' } },
+      },
       fullCompile:  { src: ['./{src,test}/**/*.ts'], outDir: '.dist/', options: { fast: 'never'  } },
-      
-    },
-    watch: {
-      copy: {
-        files: ["test/**/*", "src/**/*", "!test/**/*.ts", "!src/**/*.ts"],
-        tasks: ["copy:test", "copy:src"]
-      },
-      ts: {
-        files: ["test/**/*.ts", "src/**/*.ts"],
-        tasks: ["ts:fastCompile"]
-      },
+
     }
   });
 
   grunt.loadNpmTasks("grunt-ts");
   grunt.loadNpmTasks("grunt-contrib-copy");
-  grunt.loadNpmTasks("grunt-contrib-watch");  
-  
+
   grunt.registerTask("build", ["ts:fullCompile", "copy:src", "copy:test"]);
-  grunt.registerTask("buildAndWatch", ["build", "copy:src", "copy:test", "watch"]);  
 
 };

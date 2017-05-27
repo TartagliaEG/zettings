@@ -1,7 +1,7 @@
-import {Source} from '../zettings';
+import { Source } from '../zettings';
 import Logger from '../utils/simple-logger';
-import {safeReplace, toUppercase, replaceAll} from '../utils/text-replacements';
-import {toLeaf} from '../utils/node-iteration';
+import { safeReplace, toUppercase, replaceAll } from '../utils/text-replacements';
+import { toLeaf } from '../utils/node-iteration';
 
 const Log = new Logger('src-env');
 
@@ -10,8 +10,8 @@ const UPPERCASE_TEMP = "¬¬";
 
 export interface Dependencies {
   toUppercase: (keys: string[], token: string) => string[];
-  safeReplace: (text: string, replacements: {key: string, replaceBy: string}[]) => string;
-  deepAssign: (props: string[], value: any, root?: Object|Array<any>) => Object|Array<any>;
+  safeReplace: (text: string, replacements: { key: string, replaceBy: string }[]) => string;
+  deepAssign: (props: string[], value: any, root?: Object | Array<any>) => Object | Array<any>;
 }
 
 export default class EnvSource implements Source {
@@ -27,14 +27,14 @@ export default class EnvSource implements Source {
     this.name = options.name || 'ENV';
     this.environmentCase = options.environmentCase || 'upper';
     this.separatorToken = options.separatorToken || '__';
-    this.uppercaseToken = options.uppercaseToken ||  (options.environmentCase !== 'no_change' ? '_' : undefined);
+    this.uppercaseToken = options.uppercaseToken || (options.environmentCase !== 'no_change' ? '_' : undefined);
     this.prefix = options.prefix;
 
-    if(this.environmentCase === "no_change" && this.uppercaseToken)
+    if (this.environmentCase === "no_change" && this.uppercaseToken)
       throw new Error("Conflicting configuration. You can't set an uppercaseToken altogether with 'no_change' environmentCase. Configuring the uppercaseToken means that any occurrence of the given token should be used to modify the provided keys, and configuring the environmentCase as 'no_change' means that the keys should be used without changes.");
 
-    if(this.separatorToken === this.uppercaseToken)
-      throw new Error("You can't configure two different tokens with the same value - {"  +
+    if (this.separatorToken === this.uppercaseToken)
+      throw new Error("You can't configure two different tokens with the same value - {" +
         "separatorToken: " + this.separatorToken + ", " +
         "uppercaseToken: " + this.uppercaseToken + "}");
 
@@ -47,7 +47,7 @@ export default class EnvSource implements Source {
 
   public get(keys: string[]): any {
     keys = [].concat(keys); // clone
-    if(this.prefix)
+    if (this.prefix)
       keys = [this.prefix].concat(keys);
 
     this.insertUppercaseToken(keys);
@@ -55,7 +55,7 @@ export default class EnvSource implements Source {
 
     const key = keys.join(this.separatorToken);
 
-    if(process.env[key] !== undefined)
+    if (process.env[key] !== undefined)
       return process.env[key];
 
     return this.getAsObject(key);
@@ -70,22 +70,22 @@ export default class EnvSource implements Source {
     let result: Object;
     const allEnvKeys = Object.keys(process.env);
 
-    for(let i = 0; i < allEnvKeys.length; i++) {
+    for (let i = 0; i < allEnvKeys.length; i++) {
       const envKey = allEnvKeys[i];
       const start = key + this.separatorToken;
 
-      if(!envKey.startsWith(start))
+      if (!envKey.startsWith(start))
         continue;
 
       let remaining = envKey.replace(start, '');
 
-      if(this.environmentCase !== 'no_change')
+      if (this.environmentCase !== 'no_change')
         remaining = remaining.toLowerCase();
 
-      const replacements = [{key: this.separatorToken, replaceBy: SEPARATOR_TEMP}];
+      const replacements = [{ key: this.separatorToken, replaceBy: SEPARATOR_TEMP }];
 
-      if(this.uppercaseToken)
-        replacements.push({key: this.uppercaseToken, replaceBy: UPPERCASE_TEMP});
+      if (this.uppercaseToken)
+        replacements.push({ key: this.uppercaseToken, replaceBy: UPPERCASE_TEMP });
 
       remaining = this.deps.safeReplace(remaining, replacements);
 
@@ -103,12 +103,12 @@ export default class EnvSource implements Source {
    * @param {string[]} keys
    */
   private insertUppercaseToken(keys: string[]): void {
-    if(!this.uppercaseToken)
+    if (!this.uppercaseToken)
       return;
 
     const ucase = /[A-Z]/;
 
-    for(let i = 0; i < keys.length; i++) {
+    for (let i = 0; i < keys.length; i++) {
       let newKey: string = '';
       keys[i].split('').forEach((char) => {
         newKey += ucase.test(char) ? this.uppercaseToken + char : char;;
@@ -122,11 +122,11 @@ export default class EnvSource implements Source {
    * @param {string[]} keys
    */
   private applyEnvironmentCase(keys: string[]): void {
-    for(let i = 0; i < keys.length; i++) {
-      if(this.environmentCase === 'upper')
+    for (let i = 0; i < keys.length; i++) {
+      if (this.environmentCase === 'upper')
         keys[i] = keys[i].toUpperCase();
 
-      else if(this.environmentCase === 'lower')
+      else if (this.environmentCase === 'lower')
         keys[i] = keys[i].toLowerCase();
     }
   }
@@ -146,7 +146,7 @@ export interface EnvOptions {
    *
    * If all environment variables are being declared with the same letter case, this token could be used to mark capital letters.
    * For example, if the property 'uppercaseToken' was set to '_', the 'separatorToken' was set to  '__' and there is an environment
-   * variable named 'SERVER__SETTINGS__MAIN_PORT', calling #get(['server']) will returns { settings: {mainPort: <value>} }.
+   * variable named 'SERVER__SETTINGS__MAIN_PORT', the call #get(['server']) will returns { settings: {mainPort: <value>} }.
    */
   uppercaseToken?: string,
 

@@ -6,6 +6,7 @@ export default class JsonSource implements Source {
     get(keys: string[]): any;
 }
 export interface JsonOptions {
+    /** The source name **/
     name?: string;
     /** Specifies a list of json locations to be merged. **/
     paths: string[];

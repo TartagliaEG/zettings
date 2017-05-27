@@ -1,15 +1,13 @@
 {
   "name": "zettings",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "",
   "main": ".dist/src/zettings.js",
   "typings": ".dist/src/zettings.d.ts",
   "scripts": {
     "start": "node .",
-    "test":  "mocha --recursive .dist/test",
-    "build": "grunt build",
-    "watch": "grunt buildAndWatch",
-    "btest": "grunt build && mocha --recursive .dist/test"
+    "test": "grunt build && mocha --recursive .dist/test",
+    "build": "grunt build"
   },
   "keywords": [],
   "author": "",
@@ -23,7 +21,6 @@
     "chai": "^3.5.0",
     "grunt": "^1.0.1",
     "grunt-contrib-copy": "^1.0.0",
-    "grunt-contrib-watch": "^1.0.0",
     "grunt-ts": "^6.0.0-beta.15",
     "mocha": "^3.2.0",
     "sinon": "^2.1.0",
