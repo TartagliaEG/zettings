@@ -89,12 +89,13 @@ The library comes with the following value resolver implementations:
 
 
 The Zettings class exposes the following interface:
-| Type     | Name                       | Description
-| -        | -                          | -
-| +M | addValueResolver( resolver: ValueResolver ) | Adds a new Value resolver
-| +M | addSource( source: Source, priority?: number ) | Adds a new Source with the given priority (if not specified, it will be set with the lowest priority)
-| +M | getm( key: string, def?: any ) | Retrieve and merge (from all sources) the value associated with the given key or returns the def parameter (case no value was found). It's worth noting that only objects are merged, so if the first source returns a primitive or an array it will be returned immediately.
-| +M | refresh(): void | Calls refresh on all sources (that implements it).
-| +M | toggleSource( name: string ): void | Enable/Disable the source by its name.
-| +M | set( key: string, value: any ): void | Calls set on all sources (that implements it) passing the split key and the given value.
+
+| Type | Name | Description
+| -    | -    | -
+| +M | addValueResolver( resolver: ValueResolver ): void    | Adds a new Value resolver
+| +M | addSource( source: Source, priority?: number ): void | Adds a new Source with the given priority (if not specified, it will be set with the lowest priority)
+| +M | getm( key: string, def?: any ): any                  | Retrieve and merge (from all sources) the value associated with the given key or returns the def parameter (case no value was found). It's worth noting that only objects are merged, so if the first source returns a primitive or an array it will be returned immediately.
+| +M | refresh(): void                                      | Calls refresh on all sources (that implements it).
+| +M | toggleSource( name: string ): void                   | Enable/Disable the source by its name.
+| +M | set( key: string, value: any ): void                 | Calls set on all sources (that implements it) passing the split key and the given value.
 
