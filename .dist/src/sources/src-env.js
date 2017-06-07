@@ -38,20 +38,24 @@ class EnvSource {
         return this.getAsObject(key);
     }
     /**
-     * Transform all environment variables that starts with the given key in an object.
+     * Transform all environment variables that starts with the given key into object.
      *
      * @param {string} key
      */
     getAsObject(key) {
         let result;
         const allEnvKeys = Object.keys(process.env);
+        // Iterates over all existing environment variables
         for (let i = 0; i < allEnvKeys.length; i++) {
             const envKey = allEnvKeys[i];
             const start = key + this.separatorToken;
+            // Skips the variable names that doesn't start with the given key
             if (!envKey.startsWith(start))
                 continue;
+            // Remove the starting key and the separator, so that only the string coming after them will remain.
             let remaining = envKey.replace(start, '');
             if (this.environmentCase !== 'no_change')
+                // Normalize the lettercase
                 remaining = remaining.toLowerCase();
             const replacements = [{ key: this.separatorToken, replaceBy: SEPARATOR_TEMP }];
             if (this.uppercaseToken)

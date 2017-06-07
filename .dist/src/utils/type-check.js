@@ -7,13 +7,21 @@ function isNumeric(value) {
 }
 exports.isNumeric = isNumeric;
 function isObject(value) {
-    return typeof value === 'object' && value !== null && !Array.isArray(value);
+    return typeof value === "object" && value !== null && !isArray(value);
 }
 exports.isObject = isObject;
 function isPrimitive(value) {
-    return typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean';
+    return typeof value === "number" || typeof value === "string" || typeof value === "boolean";
 }
 exports.isPrimitive = isPrimitive;
+function isString(value) {
+    return typeof value === "string";
+}
+exports.isString = isString;
+function isBoolean(value) {
+    return typeof value === "boolean";
+}
+exports.isBoolean = isBoolean;
 function isValid(value) {
     return value !== null && value !== undefined;
 }

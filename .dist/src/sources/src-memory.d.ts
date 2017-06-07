@@ -1,4 +1,4 @@
-import { Source } from '../zettings';
+import { Source } from '../types';
 export default class MemorySource implements Source {
     readonly name: string;
     private readonly json;

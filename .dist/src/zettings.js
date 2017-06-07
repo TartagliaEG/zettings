@@ -28,8 +28,8 @@ class Zettings {
         options.defaultMemoSource = getFirstValid(options.defaultMemoSource, true);
         options.defaultEnvSource = getFirstValid(options.defaultEnvSource, true);
         options.defaultVrReference = getFirstValid(options.defaultVrReference, true);
-        options.defaultVrDeepRef = getFirstValid(options.defaultVrDeepRef, true);
         options.defaultVrMap = getFirstValid(options.defaultVrMap, true);
+        this.expTokens = getFirstValid(options.expressionTokens, { open: '${', close: '}' });
         let memoPriority = getFirstValid(options.defaultMemoSourcePriority, 1);
         let envPriority = getFirstValid(options.defaultEnvSourcePriority, 5);
         if (options.defaultMemoSource)
@@ -43,6 +43,8 @@ class Zettings {
             map.set('pwd', this.pwd);
             this.addValueResolver(new vr_map_1.default({ map: map }));
         }
+        if (!this.expTokens || !type_check_1.isString(this.expTokens.open) || !type_check_1.isString(this.expTokens.close))
+            throw new Error("Invalid expression tokens. Expected: { open: <string>, close: <string> }, but found: " + JSON.stringify(this.expTokens) + ". ");
     }
     /**
      * Add a ValueResolver to be applied each time the #get function is called.
@@ -70,7 +72,7 @@ class Zettings {
             throw new Error("The name '" + source.name + "' is being used already.");
         this.nameKeys[source.name] = true;
         Log.i("New source added ->  { name: '" + source.name + "', priority: '" + priority + "' }");
-        this.sources.push({ priority: priority, source: source });
+        this.sources.push({ priority: priority, source: source, enabled: true });
         this.sources = this.sources.sort((sourceA, sourceB) => {
             return sourceA.priority - sourceB.priority;
         });
@@ -98,10 +100,12 @@ class Zettings {
         for (let i = 0; i < this.sources.length; i++) {
             const prioritySource = this.sources[i];
             const source = prioritySource.source;
+            if (!prioritySource.enabled)
+                continue;
             let value = source.get(keys);
             if (!type_check_1.isValid(value))
                 continue;
-            // If the 'type' has not been set yet and the value isn't an object, we can break the loop (primitives and arrays won't be merged).
+            // If the 'type' have not been set yet and the 'value' isn't an object, we can break the loop (primitives and arrays shouldn't be merged).
             if (!type_check_1.isValid(type) && !type_check_1.isObject(value)) {
                 result = this.resolveValue(value);
                 break;
@@ -115,20 +119,73 @@ class Zettings {
         }
         return result === undefined ? def : result;
     }
+    /**
+     * Calls refresh in each source, so they could check for configuration changes
+     */
+    refresh() {
+        for (let i = 0; i < this.sources.length; i++)
+            this.sources[i].source.refresh && this.sources[i].enabled && this.sources[i].source.refresh();
+        return this;
+    }
+    /**
+     * Enable/Disable a source. Disabled sources won't be used to retrieve, refresh or set values.
+     *
+     * @param {string} name - The source name
+     * @throws {Error} throws an error if no source is found with the given name.
+     */
+    toggleSource(name) {
+        let found = false;
+        for (let i = 0; i < this.sources.length; i++)
+            if (this.sources[i].source.name === name) {
+                this.sources[i].enabled = !this.sources[i].enabled;
+                found = true;
+                break;
+            }
+        if (!found)
+            throw new Error("Failed to toggle. No source registered with the name '" + name + "'.");
+    }
     resolveValue(value) {
         node_iteration_1.forEachLeaf(value, (leaf, mutate) => {
-            for (let i = 0; i < this.valueResolvers.length; i++) {
-                const resolver = this.valueResolvers[i];
-                if (!resolver.canResolve(leaf))
-                    continue;
-                const resolvedValue = resolver.resolve(leaf);
-                if (type_check_1.isPrimitive(value))
-                    value = resolvedValue;
-                else
-                    mutate(resolvedValue);
-            }
-            return false;
+            let resolvedValue;
+            if (typeof leaf === 'string')
+                resolvedValue = this.resolveExpressions(leaf);
+            else
+                resolvedValue = this.applyValueResolvers(leaf);
+            if (type_check_1.isPrimitive(value))
+                value = resolvedValue;
+            else
+                mutate(resolvedValue);
+            return 'CONTINUE_ITERATION';
         });
+        return value;
+    }
+    resolveExpressions(value) {
+        let opnIdx;
+        let clsIdx;
+        let open = this.expTokens.open;
+        let close = this.expTokens.close;
+        let temp;
+        while ((opnIdx = value.lastIndexOf(open)) >= 0) {
+            temp = value.slice(opnIdx + open.length);
+            clsIdx = temp.indexOf(close);
+            if (clsIdx === -1)
+                throw new Error("An openning token was found at col " + opnIdx + " without its closing pair: ('" + value + "'). ");
+            temp = temp.slice(0, clsIdx);
+            value = value.substr(0, opnIdx) + this.applyValueResolvers(temp) + value.substr(opnIdx + open.length + clsIdx + 1);
+        }
+        return value;
+    }
+    /**
+     * Iterate over all value resolver and apply those that can handle the value.
+     *
+     * @param {any} value - the value to be resolved.
+     */
+    applyValueResolvers(value) {
+        for (let i = 0; i < this.valueResolvers.length; i++) {
+            const resolver = this.valueResolvers[i];
+            if (resolver.canResolve(value))
+                return resolver.resolve(value);
+        }
         return value;
     }
     /**
@@ -144,6 +201,8 @@ class Zettings {
         for (let i = 0; i < this.sources.length; i++) {
             const prioritySource = this.sources[i];
             const source = prioritySource.source;
+            if (!prioritySource.enabled)
+                continue;
             if (typeof source.set == "function") {
                 isSetSupported = true;
                 source.set(keys, value);

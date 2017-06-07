@@ -1,4 +1,4 @@
-import { Source } from '../zettings';
+import { Source } from '../types';
 import Logger from '../utils/simple-logger';
 import { safeReplace, toUppercase, replaceAll } from '../utils/text-replacements';
 import { toLeaf } from '../utils/node-iteration';
@@ -8,7 +8,7 @@ const Log = new Logger('src-env');
 const SEPARATOR_TEMP = "§§";
 const UPPERCASE_TEMP = "¬¬";
 
-export interface Dependencies {
+export interface EnvDependencies {
   toUppercase: (keys: string[], token: string) => string[];
   safeReplace: (text: string, replacements: { key: string, replaceBy: string }[]) => string;
   deepAssign: (props: string[], value: any, root?: Object | Array<any>) => Object | Array<any>;
@@ -20,7 +20,7 @@ export default class EnvSource implements Source {
   private readonly separatorToken: string;
   private readonly uppercaseToken: string;
   private readonly prefix: string;
-  private readonly deps: Dependencies;
+  private readonly deps: EnvDependencies;
 
   constructor(options?: EnvOptions) {
     options = options || {};
@@ -62,7 +62,7 @@ export default class EnvSource implements Source {
   }
 
   /**
-   * Transform all environment variables that starts with the given key in an object.
+   * Transform all environment variables that starts with the given key into object.
    *
    * @param {string} key
    */
@@ -70,16 +70,20 @@ export default class EnvSource implements Source {
     let result: Object;
     const allEnvKeys = Object.keys(process.env);
 
+    // Iterates over all existing environment variables
     for (let i = 0; i < allEnvKeys.length; i++) {
       const envKey = allEnvKeys[i];
       const start = key + this.separatorToken;
 
+      // Skips the variable names that doesn't start with the given key
       if (!envKey.startsWith(start))
         continue;
 
+      // Remove the starting key and the separator, so that only the string coming after them will remain.
       let remaining = envKey.replace(start, '');
 
       if (this.environmentCase !== 'no_change')
+        // Normalize the lettercase
         remaining = remaining.toLowerCase();
 
       const replacements = [{ key: this.separatorToken, replaceBy: SEPARATOR_TEMP }];
@@ -157,8 +161,7 @@ export interface EnvOptions {
   prefix?: string;
 
   /** Optional function dependencies */
-  dependencies?: Dependencies;
+  dependencies?: EnvDependencies;
 }
 
 export type LetterCase = 'upper' | 'lower' | 'no_change';
-

@@ -4,23 +4,17 @@ import EnvSource from './sources/src-env';
 import MemorySource from './sources/src-memory';
 import Logger from './utils/simple-logger';
 import VrReference from './value-resolver/vr-reference';
-import { isValid, isObject, isArray, isPrimitive } from './utils/type-check';
+import { isValid, isObject, isArray, isPrimitive, isString } from './utils/type-check';
 import { forEachLeaf } from './utils/node-iteration';
+import { Source, ValueResolver } from './types';
 import * as _ from 'lodash';
 
 const Log = new Logger('Zettings');
 
-export interface Source {
-  readonly name: string;
-  get(key: string[]): any;
-  set?(ket: string[], value: any): void;
-}
-
-
 /**
  * Zettings Options
  */
-export interface Options {
+export interface ZetOptions {
 
   /**
    * Specifies if a default EnvSource should be created.
@@ -53,13 +47,6 @@ export interface Options {
   defaultVrReference?: boolean;
 
   /**
-   * Specifies if the default deep reference resolver should be used.
-   * default - true
-   */
-  defaultVrDeepRef?: boolean;
-
-
-  /**
    * Specifies if the default map resolve should be used. The default map contains only the pwd key.
    * default - true
    */
@@ -68,34 +55,26 @@ export interface Options {
   /**
    * Specify the working directory
    */
-  pwd: string
+  pwd: string;
 
+  /**
+   * Tokens used to identify expression blocks. Defaults to { open: '${', close: '}' }.
+   */
+  expressionTokens?: ZetExpressionTokens;
 }
 
 
 interface PrioritySource {
   readonly priority: number;
   readonly source: Source;
+  enabled: boolean;
 }
 
 
-export interface ValueResolver {
-  /**
-   * Name used mainly to log info
-   */
-  readonly name: string;
-
-  /**
-   * Check if this implementation could resolve the given value.
-   */
-  canResolve(value: any): boolean;
-
-  /**
-   * The resolve function
-   */
-  resolve(value: any): any
+export interface ZetExpressionTokens {
+  open: string;
+  close: string;
 }
-
 
 export default class Zettings {
   private pwd: string;
@@ -115,18 +94,22 @@ export default class Zettings {
   /** Stores the number of registered sources */
   private counter: number = 0;
 
+  /** Tokens used to identify expression blocks */
+  private expTokens: ZetExpressionTokens;
+
   /**
    * @see Options
    */
-  constructor(options: Options) {
+  constructor(options: ZetOptions) {
     this.lowestPriority = 0;
     this.pwd = options.pwd;
 
     options.defaultMemoSource = getFirstValid(options.defaultMemoSource, true);
     options.defaultEnvSource = getFirstValid(options.defaultEnvSource, true);
     options.defaultVrReference = getFirstValid(options.defaultVrReference, true);
-    options.defaultVrDeepRef = getFirstValid(options.defaultVrDeepRef, true);
     options.defaultVrMap = getFirstValid(options.defaultVrMap, true);
+
+    this.expTokens = getFirstValid(options.expressionTokens, { open: '${', close: '}' });
 
     let memoPriority = getFirstValid(options.defaultMemoSourcePriority, 1);
     let envPriority = getFirstValid(options.defaultEnvSourcePriority, 5);
@@ -145,6 +128,10 @@ export default class Zettings {
       map.set('pwd', this.pwd);
       this.addValueResolver(new VrMap({ map: map }));
     }
+
+    if(!this.expTokens || !isString(this.expTokens.open) || !isString(this.expTokens.close))
+      throw new Error("Invalid expression tokens. Expected: { open: <string>, close: <string> }, but found: " + JSON.stringify(this.expTokens) + ". ");
+
   }
 
 
@@ -201,7 +188,7 @@ export default class Zettings {
 
     Log.i("New source added ->  { name: '" + source.name + "', priority: '" + priority + "' }");
 
-    this.sources.push({ priority: priority, source: source });
+    this.sources.push({ priority: priority, source: source, enabled: true });
     this.sources = this.sources.sort((sourceA, sourceB) => {
       return sourceA.priority - sourceB.priority;
     });
@@ -233,12 +220,15 @@ export default class Zettings {
       const prioritySource = this.sources[i];
       const source = prioritySource.source;
 
+      if (!prioritySource.enabled)
+        continue;
+
       let value = source.get(keys);
 
       if (!isValid(value))
         continue;
 
-      // If the 'type' has not been set yet and the value isn't an object, we can break the loop (primitives and arrays won't be merged).
+      // If the 'type' have not been set yet and the 'value' isn't an object, we can break the loop (primitives and arrays shouldn't be merged).
       if (!isValid(type) && !isObject(value)) {
         result = this.resolveValue(value);
         break;
@@ -259,24 +249,92 @@ export default class Zettings {
   }
 
 
-  private resolveValue(value: any): any {
+  /**
+   * Calls refresh in each source, so they could check for configuration changes
+   */
+  public refresh(): Zettings {
+    for (let i = 0; i < this.sources.length; i++)
+      this.sources[i].source.refresh && this.sources[i].enabled && this.sources[i].source.refresh();
 
-    forEachLeaf(value, (leaf, mutate) => {
-      for (let i = 0; i < this.valueResolvers.length; i++) {
-        const resolver = this.valueResolvers[i];
+    return this;
+  }
 
-        if (!resolver.canResolve(leaf))
-          continue;
+  /**
+   * Enable/Disable a source. Disabled sources won't be used to retrieve, refresh or set values.
+   *
+   * @param {string} name - The source name
+   * @throws {Error} throws an error if no source is found with the given name.
+   */
+  public toggleSource(name: string): void {
+    let found: boolean = false;
 
-        const resolvedValue = resolver.resolve(leaf);
-
-        if (isPrimitive(value))
-          value = resolvedValue;
-        else
-          mutate(resolvedValue);
+    for (let i = 0; i < this.sources.length; i++)
+      if (this.sources[i].source.name === name) {
+        this.sources[i].enabled = !this.sources[i].enabled;
+        found = true;
+        break;
       }
-      return false;
+
+    if (!found)
+      throw new Error("Failed to toggle. No source registered with the name '" + name + "'.");
+  }
+
+
+  private resolveValue(value: any): any {
+    forEachLeaf(value, (leaf, mutate) => {
+      let resolvedValue: any;
+
+      if (typeof leaf === 'string')
+        resolvedValue = this.resolveExpressions(leaf);
+      else
+        resolvedValue = this.applyValueResolvers(leaf);
+
+      if (isPrimitive(value))
+        value = resolvedValue;
+      else
+        mutate(resolvedValue);
+
+      return 'CONTINUE_ITERATION';
     });
+
+    return value;
+  }
+
+  private resolveExpressions(value: string): string {
+    let opnIdx: number;
+    let clsIdx: number;
+
+    let open: string = this.expTokens.open;
+    let close: string = this.expTokens.close;
+
+    let temp: string;
+
+    while ((opnIdx = value.lastIndexOf(open)) >= 0) {
+      temp = value.slice(opnIdx + open.length);
+      clsIdx = temp.indexOf(close);
+
+      if (clsIdx === -1)
+        throw new Error("An openning token was found at col " + opnIdx + " without its closing pair: ('" + value + "'). ");
+
+      temp = temp.slice(0, clsIdx);
+      value = value.substr(0, opnIdx) + this.applyValueResolvers(temp) + value.substr(opnIdx + open.length + clsIdx + 1);
+    }
+
+    return value;
+  }
+
+  /**
+   * Iterate over all value resolver and apply those that can handle the value.
+   *
+   * @param {any} value - the value to be resolved.
+   */
+  private applyValueResolvers(value: any): any {
+    for (let i = 0; i < this.valueResolvers.length; i++) {
+      const resolver = this.valueResolvers[i];
+
+      if (resolver.canResolve(value))
+        return resolver.resolve(value);
+    }
 
     return value;
   }
@@ -289,13 +347,16 @@ export default class Zettings {
    * @param {any} value  - The value to be saved
    * @throws {Error}     - An error will be thrown if there is no source that handles this operation
    */
-  public set(key: string, value: any) {
+  public set(key: string, value: any): void {
     let keys = key.replace(/]/g, '').split(/[\[.]/g);
     let isSetSupported = false;
 
     for (let i = 0; i < this.sources.length; i++) {
       const prioritySource = this.sources[i];
       const source = prioritySource.source;
+
+      if (!prioritySource.enabled)
+        continue;
 
       if (typeof source.set == "function") {
         isSetSupported = true;

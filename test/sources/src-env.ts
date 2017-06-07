@@ -1,7 +1,7 @@
 import {expect} from "chai";
 import {stub, spy, SinonStub} from "sinon";
 import EnvSource from "../../src/sources/src-env";
-import {Options, Source} from "../../src/zettings";
+import {ZetOptions, Source} from "../../src/types";
 import {setLoggerLevel, LVL_NONE} from '../../src/utils/simple-logger';
 
 setLoggerLevel(LVL_NONE);
@@ -102,7 +102,7 @@ describe("EnvSource", function() {
     expect(env.get(['server'])).to.be.deep.equals([['192.168.0.2', '192.168.0.3']]);
   });
 
-  it("Assert that configuring both uppercaseToken to any valid string and environmentCase to 'no_change' throw an error", function() {    
+  it("Assert that configuring both uppercaseToken to any valid string and environmentCase to 'no_change' throw an error", function() {
     expect(() => { new EnvSource({environmentCase: 'no_change', uppercaseToken: '_'}) }).to.throw(Error);
   });
 

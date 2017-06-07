@@ -5,11 +5,19 @@ export function isNumeric(value: any): boolean {
 }
 
 export function isObject(value: any): value is Object {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === "object" && value !== null && !isArray(value);
 }
 
 export function isPrimitive(value: any): value is number | string | boolean {
-  return typeof value === 'number' || typeof value === 'string' || typeof value === 'boolean';
+  return typeof value === "number" || typeof value === "string" || typeof value === "boolean";
+}
+
+export function isString(value: any): value is string {
+  return typeof value === "string";
+}
+
+export function isBoolean(value: any): value is boolean {
+  return typeof value === "boolean";
 }
 
 export function isValid(value: any): boolean {

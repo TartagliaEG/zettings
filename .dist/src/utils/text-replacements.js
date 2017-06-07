@@ -50,7 +50,7 @@ function escapeRegExp(str) {
     return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
 }
 /**
- * Replace characters following the 'ucaseToken' by its uppercase equivalent.
+ * Replace the characters prefixed with the given 'ucaseToken' by its uppercase equivalent.
  * @param {string[]} keys - Array of keys
  * @param {string} token - The token that identifies what character should be replaced
  */

@@ -1,4 +1,4 @@
-import { ValueResolver } from '../zettings';
+import { ValueResolver } from '../types';
 import * as Path from 'path';
 import * as _ from 'lodash';
 import Logger from '../utils/simple-logger';
@@ -16,7 +16,7 @@ export default class VrReference implements ValueResolver {
   readonly pattern: RegExp = /^(\${ref=)([^}]+)(})$/i;
   readonly pwd: string;
 
-  constructor(options: Options) {
+  constructor(options: RefOptions) {
     this.pwd = options.pwd;
   }
 
@@ -51,6 +51,6 @@ export default class VrReference implements ValueResolver {
   }
 }
 
-export interface Options {
+export interface RefOptions {
   pwd: string;
 }

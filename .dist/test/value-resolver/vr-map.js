@@ -11,15 +11,15 @@ describe("VrMap", function () {
             map.set('obj', { 'an': 'object' });
             map.set('pwd', '/path/to/file');
             const v = new vr_map_1.default({ map: map });
-            chai_1.expect(v.resolve('${key=pwd}')).to.be.equals('/path/to/file');
-            chai_1.expect(v.resolve('${key=obj}')).to.be.deep.equals({ 'an': 'object' });
+            chai_1.expect(v.resolve('key=pwd')).to.be.equals('/path/to/file');
+            chai_1.expect(v.resolve('key=obj')).to.be.deep.equals({ 'an': 'object' });
         });
         it("Assert that canHandle returns false when the key doesn't exists", function () {
             const map = new Map();
             map.set('key', 'value');
             const v = new vr_map_1.default({ map: map });
-            chai_1.expect(v.canResolve('${key=key}')).to.be.equals(true);
-            chai_1.expect(v.canResolve('${key=nonExistentKey}')).to.be.equals(false);
+            chai_1.expect(v.canResolve('key=key')).to.be.equals(true);
+            chai_1.expect(v.canResolve('key=nonExistentKey')).to.be.equals(false);
         });
     });
 });

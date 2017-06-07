@@ -1,12 +1,8 @@
-export interface Source {
-    readonly name: string;
-    get(key: string[]): any;
-    set?(ket: string[], value: any): void;
-}
+import { Source, ValueResolver } from './types';
 /**
  * Zettings Options
  */
-export interface Options {
+export interface ZetOptions {
     /**
      * Specifies if a default EnvSource should be created.
      * default - true
@@ -33,11 +29,6 @@ export interface Options {
      */
     defaultVrReference?: boolean;
     /**
-     * Specifies if the default deep reference resolver should be used.
-     * default - true
-     */
-    defaultVrDeepRef?: boolean;
-    /**
      * Specifies if the default map resolve should be used. The default map contains only the pwd key.
      * default - true
      */
@@ -46,20 +37,14 @@ export interface Options {
      * Specify the working directory
      */
     pwd: string;
+    /**
+     * Tokens used to identify expression blocks. Defaults to { open: '${', close: '}' }.
+     */
+    expressionTokens?: ZetExpressionTokens;
 }
-export interface ValueResolver {
-    /**
-     * Name used mainly to log info
-     */
-    readonly name: string;
-    /**
-     * Check if this implementation could resolve the given value.
-     */
-    canResolve(value: any): boolean;
-    /**
-     * The resolve function
-     */
-    resolve(value: any): any;
+export interface ZetExpressionTokens {
+    open: string;
+    close: string;
 }
 export default class Zettings {
     private pwd;
@@ -73,10 +58,12 @@ export default class Zettings {
     private nameKeys;
     /** Stores the number of registered sources */
     private counter;
+    /** Tokens used to identify expression blocks */
+    private expTokens;
     /**
      * @see Options
      */
-    constructor(options: Options);
+    constructor(options: ZetOptions);
     /**
      * Add a ValueResolver to be applied each time the #get function is called.
      *
@@ -112,7 +99,25 @@ export default class Zettings {
      * @param {any} [def]  - A default value used when no value was found.
      */
     getm(key: string, def?: Object): any;
+    /**
+     * Calls refresh in each source, so they could check for configuration changes
+     */
+    refresh(): Zettings;
+    /**
+     * Enable/Disable a source. Disabled sources won't be used to retrieve, refresh or set values.
+     *
+     * @param {string} name - The source name
+     * @throws {Error} throws an error if no source is found with the given name.
+     */
+    toggleSource(name: string): void;
     private resolveValue(value);
+    private resolveExpressions(value);
+    /**
+     * Iterate over all value resolver and apply those that can handle the value.
+     *
+     * @param {any} value - the value to be resolved.
+     */
+    private applyValueResolvers(value);
     /**
      * Associate the value with the given key.
      *

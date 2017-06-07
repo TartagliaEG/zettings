@@ -5,18 +5,7 @@ import { isObject, isArray, isNumeric } from './type-check';
 
 const CIRCULAR_KEY = '___$CIRCULAR';
 
-/**
- * Iterates over the given node and call the onReachLeaf fuction on each leaf.
- *
- * @param {any} node - The root node to start looking for leafs. The node itself could be a node.
- * @param {OnReachLeaf} onReachLeaf - The function called when the leaf is reached.
- * @see {OnReachLeaf} Return true to stop the iteration
- */
-export function forEachLeaf(node: any, onReachLeaf: (leaf: primitive, mutate: (newValue: any) => void) => boolean): void {
-  const circularRefs = [];
-  _forEachLeaf([node], onReachLeaf, circularRefs);
-  circularRefs.forEach((item) => { delete item[CIRCULAR_KEY]; });
-}
+export type IterationFlag = 'CONTINUE_ITERATION' | 'BREAK_ITERATION';
 
 /**
  * The function called when a leaf is reached.
@@ -24,7 +13,22 @@ export function forEachLeaf(node: any, onReachLeaf: (leaf: primitive, mutate: (n
  * @param {function} mutate - A that allows the leaf mutation.
  * @returns {boolean} - Return true to stop the iteration or false to continue.
  */
-export type OnReachLeaf = (leaf: primitive, mutate: (newValue: any) => void) => boolean;
+export type OnReachLeaf = (leaf: primitive, mutate: (newValue: any) => void) => IterationFlag;
+
+
+/**
+ * Iterates over the given node and call the onReachLeaf fuction on each leaf.
+ *
+ * @param {any} node - The root node to start looking for leafs. The node itself can be a leaf.
+ * @param {OnReachLeaf} onReachLeaf - The function called when the leaf is reached.
+ * @see {OnReachLeaf} Return true to stop the iteration
+ */
+export function forEachLeaf(node: any, onReachLeaf: OnReachLeaf): void {
+  const circularRefs = [];
+  _forEachLeaf([node], onReachLeaf, circularRefs);
+  circularRefs.forEach((item) => { delete item[CIRCULAR_KEY]; });
+}
+
 
 /**
  * Do a deep iteration in objects and arrays and call the onReachLeaf function on each leaf.
@@ -50,7 +54,7 @@ function _forEachLeaf(node: Array<any> | Object, onReachLeaf: OnReachLeaf, circu
     if (isObject(value) || isArray(value))
       shouldBreak = _forEachLeaf(value, onReachLeaf, circularRefs);
     else
-      shouldBreak = onReachLeaf(value, (newVal: any) => { node[key] = newVal });
+      shouldBreak = onReachLeaf(value, (newVal: any) => { node[key] = newVal }) === 'BREAK_ITERATION';
 
     if (shouldBreak)
       return true;

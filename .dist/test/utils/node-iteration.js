@@ -30,17 +30,17 @@ describe("NodeIteration", function () {
             const obj = { a: 1 };
             node_iteration_1.forEachLeaf(obj, (leaf, mutate) => {
                 mutate(2);
-                return false;
+                return 'CONTINUE_ITERATION';
             });
             chai_1.expect(obj.a).to.be.equals(2);
         });
-        it('Assert that the iteration stops when the callback returns true.', function () {
-            const onReachLeaf = sinon_1.spy(() => true);
+        it('Should interrupt the iteration when the callback returns "BREAK_ITERATION".', function () {
+            const onReachLeaf = sinon_1.spy(() => "BREAK_ITERATION");
             node_iteration_1.forEachLeaf({ a: 1, b: 2, c: 3 }, onReachLeaf);
             chai_1.expect(onReachLeaf.calledOnce).to.be.true;
             chai_1.expect(onReachLeaf.calledTwice).to.be.false;
         });
-        it('Assert that deeply nested values will be reached.', function () {
+        it('Should reach in deeply nested values.', function () {
             const onReachLeaf = sinon_1.spy((v) => false);
             const deepObj = { level1: { level2: [{ level3: { key1: 'value1', key2: 'value2' } }, 'value3'] } };
             node_iteration_1.forEachLeaf(deepObj, onReachLeaf);
@@ -49,7 +49,7 @@ describe("NodeIteration", function () {
             chai_1.expect(onReachLeaf.getCall(1).args[0]).to.be.equals('value2');
             chai_1.expect(onReachLeaf.getCall(2).args[0]).to.be.equals('value3');
         });
-        it('Assert that circular references are ignored.', function () {
+        it('Should ignore circular references.', function () {
             const onReachLeaf = sinon_1.spy(() => false);
             const obj = { a: 1, b: 2 };
             obj.ref1 = obj;
@@ -61,11 +61,11 @@ describe("NodeIteration", function () {
         });
     });
     describe('.toLeaf', function () {
-        it("Assert that strings become objects and numbers become .", function () {
+        it("Should handle strings as object keys and numbers as array indexes.", function () {
             chai_1.expect(node_iteration_1.toLeaf(['obj'], 1)).to.be.deep.equals({ obj: 1 });
             chai_1.expect(node_iteration_1.toLeaf(['0'], 1)).to.be.deep.equals([1]);
         });
-        it("Assert that multiple keys resolves to nested objects/arrays", function () {
+        it("Should work with deeply nested properties and indexes", function () {
             chai_1.expect(node_iteration_1.toLeaf(['obj', 'key1', 'key2'], 1)).to.be.deep.equals({ obj: { key1: { key2: 1 } } });
             chai_1.expect(node_iteration_1.toLeaf(['0', '0', '0'], 1)).to.be.deep.equals([[[1]]]);
             chai_1.expect(node_iteration_1.toLeaf(['0', 'test', '0'], 1)).to.be.deep.equals([{ test: [1] }]);

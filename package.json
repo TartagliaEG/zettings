@@ -1,9 +1,9 @@
 {
   "name": "zettings",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "",
-  "main": ".dist/src/zettings.js",
-  "typings": ".dist/src/zettings.d.ts",
+  "main": ".dist/src/types.js",
+  "typings": ".dist/src/types.d.ts",
   "scripts": {
     "start": "node .",
     "test": "grunt build && mocha --recursive .dist/test",

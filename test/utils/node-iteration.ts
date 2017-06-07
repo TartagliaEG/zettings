@@ -1,6 +1,6 @@
 import {expect} from "chai";
 import {stub, spy, SinonStub} from "sinon";
-import {forEachLeaf, toLeaf} from "../../src/utils/node-iteration";
+import {forEachLeaf, toLeaf, IterationFlag} from "../../src/utils/node-iteration";
 import {setLoggerLevel, LVL_NONE} from '../../src/utils/simple-logger';
 
 setLoggerLevel(LVL_NONE);
@@ -36,24 +36,24 @@ describe("NodeIteration", function() {
     it('Assert that the mutate function changes the value.', function() {
       const obj = {a: 1};
 
-      forEachLeaf(obj, (leaf, mutate): boolean => {
+      forEachLeaf(obj, (leaf, mutate): IterationFlag => {
         mutate(2);
-        return false;
+        return 'CONTINUE_ITERATION';
       });
 
       expect(obj.a).to.be.equals(2);
     });
 
 
-    it('Assert that the iteration stops when the callback returns true.', function() {
-      const onReachLeaf = spy(() => true);
+    it('Should interrupt the iteration when the callback returns "BREAK_ITERATION".', function() {
+      const onReachLeaf = spy(() => "BREAK_ITERATION");
       forEachLeaf({a: 1, b: 2, c:3}, onReachLeaf);
       expect(onReachLeaf.calledOnce).to.be.true;
       expect(onReachLeaf.calledTwice).to.be.false;
     });
 
 
-    it('Assert that deeply nested values will be reached.', function() {
+    it('Should reach in deeply nested values.', function() {
       const onReachLeaf = spy((v) => false);
       const deepObj = {level1: {level2: [{level3: {key1: 'value1', key2: 'value2'}}, 'value3']}}
       forEachLeaf(deepObj, onReachLeaf);
@@ -64,7 +64,7 @@ describe("NodeIteration", function() {
     });
 
 
-    it('Assert that circular references are ignored.', function() {
+    it('Should ignore circular references.', function() {
       const onReachLeaf = spy(() => false);
       const obj: any = {a: 1, b: 2};
       obj.ref1 = obj;
@@ -80,12 +80,12 @@ describe("NodeIteration", function() {
   });
 
   describe('.toLeaf', function() {
-    it("Assert that strings become objects and numbers become .", function() {
+    it("Should handle strings as object keys and numbers as array indexes.", function() {
       expect(toLeaf(['obj'], 1)).to.be.deep.equals({obj: 1});
       expect(toLeaf(['0'], 1)).to.be.deep.equals([1]);
     });
 
-    it("Assert that multiple keys resolves to nested objects/arrays", function() {
+    it("Should work with deeply nested properties and indexes", function() {
       expect(toLeaf(['obj', 'key1', 'key2'], 1)).to.be.deep.equals({obj: {key1: {key2: 1}}});
       expect(toLeaf(['0', '0', '0'], 1)).to.be.deep.equals([[[1]]]);
       expect(toLeaf(['0', 'test', '0'], 1)).to.be.deep.equals([{test: [1]}]);

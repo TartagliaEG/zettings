@@ -1,5 +1,5 @@
-import { Source } from '../zettings';
-export interface Dependencies {
+import { Source } from '../types';
+export interface EnvDependencies {
     toUppercase: (keys: string[], token: string) => string[];
     safeReplace: (text: string, replacements: {
         key: string;
@@ -17,7 +17,7 @@ export default class EnvSource implements Source {
     constructor(options?: EnvOptions);
     get(keys: string[]): any;
     /**
-     * Transform all environment variables that starts with the given key in an object.
+     * Transform all environment variables that starts with the given key into object.
      *
      * @param {string} key
      */
@@ -52,6 +52,6 @@ export interface EnvOptions {
     /** Specifies a prefix to be used in all keys. Defaults to '' **/
     prefix?: string;
     /** Optional function dependencies */
-    dependencies?: Dependencies;
+    dependencies?: EnvDependencies;
 }
 export declare type LetterCase = 'upper' | 'lower' | 'no_change';

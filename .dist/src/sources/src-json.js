@@ -9,9 +9,14 @@ class JsonSource {
         this.name = options.name || 'JSON';
         options.pwd = options.pwd === undefined ? '' : options.pwd;
         options.pwd = options.pwd === '$HOME' ? OS.homedir() : options.pwd;
-        options.paths.forEach((path) => {
+        this.paths = options.paths.map(path => Path.join(options.pwd, path));
+        this.refresh();
+    }
+    refresh() {
+        this.json = {};
+        this.paths.forEach((path) => {
             try {
-                _.merge(this.json, require(Path.join(options.pwd, path)));
+                _.merge(this.json, require(path));
             }
             catch (err) {
                 console.error("No valid json found at '" + path + "'", err);

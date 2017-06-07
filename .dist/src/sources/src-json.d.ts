@@ -1,8 +1,10 @@
-import { Source } from '../zettings';
+import { Source } from '../types';
 export default class JsonSource implements Source {
     readonly name: string;
-    private readonly json;
+    private json;
+    private readonly paths;
     constructor(options: JsonOptions);
+    refresh(): void;
     get(keys: string[]): any;
 }
 export interface JsonOptions {

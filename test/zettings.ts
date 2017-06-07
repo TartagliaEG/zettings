@@ -1,18 +1,18 @@
-import {expect} from "chai";
-import {stub, spy, SinonStub} from "sinon";
+import { expect } from "chai";
+import { stub, spy, SinonStub } from "sinon";
 import Zettings from "../src/zettings";
-import {Options, Source} from "../src/zettings";
-import {setLoggerLevel, LVL_NONE} from '../src/utils/simple-logger';
+import { ZetOptions, Source } from "../src/types";
+import { setLoggerLevel, LVL_NONE } from '../src/utils/simple-logger';
 
 setLoggerLevel(LVL_NONE);
-const pwd = {pwd: ''};
+const pwd = { pwd: '' };
 
-describe("Zettings", function() {
+describe("Zettings", function () {
 
-  describe(".addSource", function() {
-    it("Should ensure that the name and priority pair are  source names are unique.", function() {
+  describe(".addSource", function () {
+    it("Should ensure that the name and priority pair are  source names are unique.", function () {
       const Z = new Zettings(pwd);
-      const fakeSource: Source = { get: (key: string[]): any => {return 1;}, name: "mock" };
+      const fakeSource: Source = { get: (key: string[]): any => { return 1; }, name: "mock" };
 
       Z.addSource(fakeSource);
       expect(() => { Z.addSource(fakeSource) }).to.throw(Error);
@@ -20,13 +20,13 @@ describe("Zettings", function() {
   });
 
 
-  describe(".count", function() {
-    it("Should return the number of registered sources.", function() {
+  describe(".count", function () {
+    it("Should return the number of registered sources.", function () {
       const Z = new Zettings(pwd);
       const count = Z.count();
-      const mock1: Source = {name: "1", get: (a:string[]) => null};
-      const mock2: Source = {name: "2", get: (a:string[]) => null};
-      const mock3: Source = {name: "3", get: (a:string[]) => null};
+      const mock1: Source = { name: "1", get: (a: string[]) => null };
+      const mock2: Source = { name: "2", get: (a: string[]) => null };
+      const mock3: Source = { name: "3", get: (a: string[]) => null };
 
       expect(Z.count()).to.be.equals(count);
 
@@ -40,20 +40,20 @@ describe("Zettings", function() {
   });
 
 
-  describe(".addValueResolver", function() {
-    it("Should use the new configured value resolver", function() {
+  describe(".addValueResolver", function () {
+    it("Should use the new configured value resolver", function () {
       const Z = new Zettings(pwd);
-      Z.addValueResolver({name: "any", canResolve: () => true, resolve: () => 'ok'});
-      Z.addSource({get:() => "value", name: 'any'});
+      Z.addValueResolver({ name: "any", canResolve: () => true, resolve: () => 'ok' });
+      Z.addSource({ get: () => "${replace this value by the word ok}", name: 'any' });
       expect(Z.getm('-')).to.be.equals('ok');
     });
   });
 
 
-  describe(".getm", function() {
-    it("Should call the source's get method with the splitted keys as arguments.", function() {
+  describe(".getm", function () {
+    it("Should call the source's get method with the split keys as arguments.", function () {
       const Z = new Zettings(pwd);
-      const mock: Source = { get: (key: string[]): any => {return 1;}, name: "mock" };
+      const mock: Source = { get: (key: string[]): any => { return 1; }, name: "mock" };
 
       const spGet = spy(mock, "get");
 
@@ -65,18 +65,18 @@ describe("Zettings", function() {
     });
 
 
-    it("Once no sources contains the given key, it should return the default value (second parameter).", function() {
+    it("If no sources contains the given key, it should return the default value (second parameter).", function () {
       const Z = new Zettings(pwd);
 
       expect(Z.getm('none', 1)).to.be.equals(1);
     });
 
 
-    it("Should calls the source with highest priority first.", function() {
+    it("Should calls the source with highest priority first.", function () {
       const Z = new Zettings(pwd);
-      const mock1: Source = {name: "1", get: (a: string[]) => "one"  };
-      const mock2: Source = {name: "2", get: (a: string[]) => "two"  };
-      const mock3: Source = {name: "3", get: (a: string[]) => "three"};
+      const mock1: Source = { name: "1", get: (a: string[]) => "one" };
+      const mock2: Source = { name: "2", get: (a: string[]) => "two" };
+      const mock3: Source = { name: "3", get: (a: string[]) => "three" };
 
       Z.addSource(mock1, 10);
       expect(Z.getm("a")).to.be.equals("one");
@@ -96,51 +96,77 @@ describe("Zettings", function() {
     });
 
 
-    it("Should merge objects from multiple sources.", function() {
+    it("Should ignore disabled sources.", function () {
+      const Z = new Zettings({ pwd: '', defaultEnvSource: false, defaultMemoSource: false });
+      const mock1: Source = { name: "1", get: (a: string[]) => "one" };
+      const mock2: Source = { name: "2", get: (a: string[]) => "two" };
+      const mock3: Source = { name: "3", get: (a: string[]) => "three" };
+
+      Z.addSource(mock1, 1);
+      Z.addSource(mock2, 2);
+      Z.addSource(mock3, 3);
+
+      expect(Z.getm('a')).to.be.equals('one');
+
+      Z.toggleSource('1');
+      expect(Z.getm('a')).to.be.equals('two');
+
+      Z.toggleSource('2');
+      expect(Z.getm('a')).to.be.equals('three');
+
+      Z.toggleSource('3');
+      expect(Z.getm('a')).to.be.equals(undefined);
+
+      Z.toggleSource('1');
+      expect(Z.getm('a')).to.be.equals('one');
+    });
+
+
+    it("Should merge objects from multiple sources.", function () {
       const Z = new Zettings(pwd);
-      const mock1: Source = {name: "1", get: (a: string[]) => {return {'key1': 'a'}}};
-      const mock2: Source = {name: "2", get: (a: string[]) => {return {'key2': 'b'}}};
-      const mock3: Source = {name: "3", get: (a: string[]) => {return {'key3': 'c'}}};
+      const mock1: Source = { name: "1", get: (a: string[]) => { return { 'key1': 'a' } } };
+      const mock2: Source = { name: "2", get: (a: string[]) => { return { 'key2': 'b' } } };
+      const mock3: Source = { name: "3", get: (a: string[]) => { return { 'key3': 'c' } } };
 
       Z.addSource(mock1);
       Z.addSource(mock2);
       Z.addSource(mock3);
 
-      expect(Z.getm('a')).to.be.deep.equals({'key1': 'a', 'key2': 'b', 'key3': 'c'});
+      expect(Z.getm('a')).to.be.deep.equals({ 'key1': 'a', 'key2': 'b', 'key3': 'c' });
     });
 
 
-    it("Should merge sources based on its priority.", function() {
+    it("Should merge sources based on its priority.", function () {
       const Z = new Zettings(pwd);
-      const mock1: Source = {name: "1", get: (a: string[]) => {return {'key1': 'a'}}};
-      const mock2: Source = {name: "2", get: (a: string[]) => {return {'key1': 'b'}}};
-      const mock3: Source = {name: "3", get: (a: string[]) => {return {'key1': 'c'}}};
+      const mock1: Source = { name: "1", get: (a: string[]) => { return { 'key1': 'a' } } };
+      const mock2: Source = { name: "2", get: (a: string[]) => { return { 'key1': 'b' } } };
+      const mock3: Source = { name: "3", get: (a: string[]) => { return { 'key1': 'c' } } };
 
       Z.addSource(mock1, 11);
       Z.addSource(mock2, 10);
       Z.addSource(mock3, 12);
 
-      expect(Z.getm('a')).to.be.deep.equals({'key1': 'b'});
+      expect(Z.getm('a')).to.be.deep.equals({ 'key1': 'b' });
     });
 
 
-    it("Should merge only objects.", function() {
+    it("Should merge only objects.", function () {
       const Z = new Zettings(pwd);
-      const mock1: Source = {name: "1", get: (a: string[]) => {return {'key1': 'a'}}};
-      const mock2: Source = {name: "2", get: (a: string[]) => 'non-object' };
+      const mock1: Source = { name: "1", get: (a: string[]) => { return { 'key1': 'a' } } };
+      const mock2: Source = { name: "2", get: (a: string[]) => 'non-object' };
 
       Z.addSource(mock1, 11);
       Z.addSource(mock2, 12);
 
-      expect(Z.getm('a')).to.be.deep.equals({'key1': 'a'});
+      expect(Z.getm('a')).to.be.deep.equals({ 'key1': 'a' });
     });
 
 
-    it("Shouldn't query other sources when the first one has returned a non-mergeable value already.", function() {
+    it("Shouldn't query other sources when the first one has returned a non-mergeable value already.", function () {
       const Z = new Zettings(pwd);
       const get = spy((a: string[]) => 'non-object');
-      const mock1: Source = {name: "1", get: (a: string[]) => 'first-value'};
-      const mock2: Source = {name: "2", get: get};
+      const mock1: Source = { name: "1", get: (a: string[]) => 'first-value' };
+      const mock2: Source = { name: "2", get: get };
 
       Z.getm('a');
 
@@ -149,22 +175,56 @@ describe("Zettings", function() {
   });
 
 
-  describe(".set", function() {
-    it("Should throw an error when there're no sources implementing the set method.", function() {
-      const Z = new Zettings({defaultEnvSource: false, defaultMemoSource: false, pwd: 'a'});
-      expect(() => {Z.set('key', 'value')}).to.throw(Error);
+  describe(".set", function () {
+    it("Should throw an error when there're no sources implementing the set method.", function () {
+      const Z = new Zettings({ defaultEnvSource: false, defaultMemoSource: false, pwd: 'a' });
+      expect(() => { Z.set('key', 'value') }).to.throw(Error);
+    });
+
+    it("Should ignore disabled sources.", function () {
+      const Z = new Zettings({ pwd: '', defaultEnvSource: false, defaultMemoSource: false });
+      const mock1 = { name: "1", set: stub(), get: stub() };
+      const mock2 = { name: "2", set: stub(), get: stub() };
+      const mock3 = { name: "3", set: stub(), get: stub() };
+
+      Z.addSource(mock1, 1);
+      Z.addSource(mock2, 2);
+      Z.addSource(mock3, 3);
+
+      Z.set('testKey', 10);
+
+      expect(mock1.set.calledOnce).to.be.true;
+      expect(mock2.set.calledOnce).to.be.true;
+      expect(mock3.set.calledOnce).to.be.true;
+
+      expect(mock1.set.getCall(0).args).to.be.deep.equals([['testKey'], 10]);
+      expect(mock2.set.getCall(0).args).to.be.deep.equals([['testKey'], 10]);
+      expect(mock3.set.getCall(0).args).to.be.deep.equals([['testKey'], 10]);
+
+      Z.toggleSource('1');
+      Z.toggleSource('3');
+
+      Z.set('otherKey', 11);
+
+      expect(mock1.set.calledOnce).to.be.true;
+      expect(mock2.set.calledTwice).to.be.true;
+      expect(mock3.set.calledOnce).to.be.true;
+
+      expect(mock1.set.getCall(0).args).to.be.deep.equals([['testKey'], 10]);
+      expect(mock2.set.getCall(1).args).to.be.deep.equals([['otherKey'], 11]);
+      expect(mock3.set.getCall(0).args).to.be.deep.equals([['testKey'], 10]);
     });
   });
 
 
-  describe("Zettings (defaults)", function () {
-    it('Should have default sources configured.', function() {
+  describe("(defaults)", function () {
+    it('Should have default sources configured.', function () {
       const Z = new Zettings(pwd);
       expect(Z.count()).to.be.greaterThan(0);
     });
 
 
-    it("Should disable default sources.", function() {
+    it("Should disable default sources.", function () {
       const Z = new Zettings({
         defaultEnvSource: false,
         defaultMemoSource: false,
@@ -173,8 +233,6 @@ describe("Zettings", function() {
 
       expect(Z.count()).to.be.equals(0);
     });
-
   });
 
 });
-

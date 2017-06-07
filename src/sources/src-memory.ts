@@ -1,4 +1,4 @@
-import { Source } from '../zettings';
+import { Source } from '../types';
 import * as _ from 'lodash';
 
 export default class MemorySource implements Source {
@@ -19,7 +19,6 @@ export default class MemorySource implements Source {
     _.set(this.json, keys, value);
   }
 }
-
 
 export interface MemoryOptions {
   name?: string
