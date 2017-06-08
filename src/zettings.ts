@@ -129,7 +129,7 @@ export default class Zettings {
       this.addValueResolver(new VrMap({ map: map }));
     }
 
-    if(!this.expTokens || !isString(this.expTokens.open) || !isString(this.expTokens.close))
+    if (!this.expTokens || !isString(this.expTokens.open) || !isString(this.expTokens.close))
       throw new Error("Invalid expression tokens. Expected: { open: <string>, close: <string> }, but found: " + JSON.stringify(this.expTokens) + ". ");
 
   }
@@ -317,7 +317,11 @@ export default class Zettings {
         throw new Error("An openning token was found at col " + opnIdx + " without its closing pair: ('" + value + "'). ");
 
       temp = temp.slice(0, clsIdx);
-      value = value.substr(0, opnIdx) + this.applyValueResolvers(temp) + value.substr(opnIdx + open.length + clsIdx + 1);
+      temp = this.applyValueResolvers(temp);
+
+      value = isPrimitive(temp)
+        ? value.substr(0, opnIdx) + temp + value.substr(opnIdx + open.length + clsIdx + 1)
+        : temp;
     }
 
     return value;

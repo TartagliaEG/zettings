@@ -171,7 +171,10 @@ class Zettings {
             if (clsIdx === -1)
                 throw new Error("An openning token was found at col " + opnIdx + " without its closing pair: ('" + value + "'). ");
             temp = temp.slice(0, clsIdx);
-            value = value.substr(0, opnIdx) + this.applyValueResolvers(temp) + value.substr(opnIdx + open.length + clsIdx + 1);
+            temp = this.applyValueResolvers(temp);
+            value = type_check_1.isPrimitive(temp)
+                ? value.substr(0, opnIdx) + temp + value.substr(opnIdx + open.length + clsIdx + 1)
+                : temp;
         }
         return value;
     }
