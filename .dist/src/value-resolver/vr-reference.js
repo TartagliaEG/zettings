@@ -12,12 +12,11 @@ const Log = new simple_logger_1.default('vr-reference');
 class VrReference {
     constructor(options) {
         this.name = NAME;
-        this.pattern = /^(\${ref=)([^}]+)(})$/i;
+        this.pattern = /^ref=/i;
         this.pwd = options.pwd;
     }
     resolve(value) {
-        // value#split results in ['', '${ref=', '<content>', '}']
-        const content = value.split(this.pattern)[2];
+        const content = value.split(this.pattern)[1];
         let moduleProp = content.split('#')[1];
         let modulePath = content.split('#')[0];
         let module;

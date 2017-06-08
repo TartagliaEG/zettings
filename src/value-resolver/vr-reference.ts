@@ -13,7 +13,7 @@ const Log = new Logger('vr-reference');
  */
 export default class VrReference implements ValueResolver {
   readonly name: string = NAME;
-  readonly pattern: RegExp = /^(\${ref=)([^}]+)(})$/i;
+  readonly pattern: RegExp = /^ref=/i;
   readonly pwd: string;
 
   constructor(options: RefOptions) {
@@ -21,8 +21,7 @@ export default class VrReference implements ValueResolver {
   }
 
   public resolve(value: any): any {
-    // value#split results in ['', '${ref=', '<content>', '}']
-    const content: string = value.split(this.pattern)[2];
+    const content: string = value.split(this.pattern)[1];
 
     let moduleProp: string = content.split('#')[1];
     let modulePath: string = content.split('#')[0];
