@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const zettings_1 = require("./zettings");
 exports.default = zettings_1.default;
+var expression_resolver_1 = require("./utils/expression-resolver");
+exports.ExpressionResolver = expression_resolver_1.ExpressionResolver;
 // Sources
 const src_env_1 = require("./sources/src-env");
 exports.EnvSource = src_env_1.default;

@@ -1,7 +1,6 @@
 import * as _ from 'lodash';
 
-import { primitive } from './types';
-import { isObject, isArray, isNumeric } from './type-check';
+import { primitive, isObject, isArray, isNumeric } from './type-check';
 
 const CIRCULAR_KEY = '___$CIRCULAR';
 

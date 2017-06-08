@@ -18,9 +18,10 @@ export interface ValueResolver {
      */
     resolve(value: any): any;
 }
-import Zettings, { ZetExpressionTokens, ZetOptions } from './zettings';
+import Zettings, { ZetOptions } from './zettings';
 export default Zettings;
-export { ZetExpressionTokens, ZetOptions };
+export { ZetOptions };
+export { ExpressionResolver, ExpressionTokens } from './utils/expression-resolver';
 import EnvSource, { EnvDependencies, EnvOptions } from './sources/src-env';
 import JsonSource, { JsonOptions } from './sources/src-json';
 import MemorySource, { MemoryOptions } from './sources/src-memory';

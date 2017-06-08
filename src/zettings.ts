@@ -7,6 +7,7 @@ import VrReference from './value-resolver/vr-reference';
 import { isValid, isObject, isArray, isPrimitive, isString } from './utils/type-check';
 import { forEachLeaf } from './utils/node-iteration';
 import { Source, ValueResolver } from './types';
+import { ExpressionResolver } from './utils/expression-resolver';
 import * as _ from 'lodash';
 
 const Log = new Logger('Zettings');
@@ -58,9 +59,9 @@ export interface ZetOptions {
   pwd: string;
 
   /**
-   * Tokens used to identify expression blocks. Defaults to { open: '${', close: '}' }.
+   * Resolve Expression
    */
-  expressionTokens?: ZetExpressionTokens;
+  expressionResolver?: (value: string, resolveValue: (string) => any) => any
 }
 
 
@@ -70,11 +71,6 @@ interface PrioritySource {
   enabled: boolean;
 }
 
-
-export interface ZetExpressionTokens {
-  open: string;
-  close: string;
-}
 
 export default class Zettings {
   private pwd: string;
@@ -94,8 +90,8 @@ export default class Zettings {
   /** Stores the number of registered sources */
   private counter: number = 0;
 
-  /** Tokens used to identify expression blocks */
-  private expTokens: ZetExpressionTokens;
+  /** Resolve expressions in configuration values  */
+  private expResolver?: ExpressionResolver
 
   /**
    * @see Options
@@ -109,7 +105,7 @@ export default class Zettings {
     options.defaultVrReference = getFirstValid(options.defaultVrReference, true);
     options.defaultVrMap = getFirstValid(options.defaultVrMap, true);
 
-    this.expTokens = getFirstValid(options.expressionTokens, { open: '${', close: '}' });
+    this.expResolver = getFirstValid(options.expressionResolver, new ExpressionResolver());
 
     let memoPriority = getFirstValid(options.defaultMemoSourcePriority, 1);
     let envPriority = getFirstValid(options.defaultEnvSourcePriority, 5);
@@ -128,10 +124,6 @@ export default class Zettings {
       map.set('pwd', this.pwd);
       this.addValueResolver(new VrMap({ map: map }));
     }
-
-    if (!this.expTokens || !isString(this.expTokens.open) || !isString(this.expTokens.close))
-      throw new Error("Invalid expression tokens. Expected: { open: <string>, close: <string> }, but found: " + JSON.stringify(this.expTokens) + ". ");
-
   }
 
 
@@ -285,7 +277,7 @@ export default class Zettings {
       let resolvedValue: any;
 
       if (typeof leaf === 'string')
-        resolvedValue = this.resolveExpressions(leaf);
+        resolvedValue = this.expResolver.resolve(leaf, this.applyValueResolvers.bind(this));
       else
         resolvedValue = this.applyValueResolvers(leaf);
 
@@ -300,32 +292,6 @@ export default class Zettings {
     return value;
   }
 
-  private resolveExpressions(value: string): string {
-    let opnIdx: number;
-    let clsIdx: number;
-
-    let open: string = this.expTokens.open;
-    let close: string = this.expTokens.close;
-
-    let temp: string;
-
-    while ((opnIdx = value.lastIndexOf(open)) >= 0) {
-      temp = value.slice(opnIdx + open.length);
-      clsIdx = temp.indexOf(close);
-
-      if (clsIdx === -1)
-        throw new Error("An openning token was found at col " + opnIdx + " without its closing pair: ('" + value + "'). ");
-
-      temp = temp.slice(0, clsIdx);
-      temp = this.applyValueResolvers(temp);
-
-      value = isPrimitive(temp)
-        ? value.substr(0, opnIdx) + temp + value.substr(opnIdx + open.length + clsIdx + 1)
-        : temp;
-    }
-
-    return value;
-  }
 
   /**
    * Iterate over all value resolver and apply those that can handle the value.

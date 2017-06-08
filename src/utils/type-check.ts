@@ -1,5 +1,7 @@
 const isArray = Array.isArray
 
+export type primitive = number | string | null | undefined | boolean;
+
 export function isNumeric(value: any): boolean {
   return !isNaN(parseFloat(value)) && isFinite(value);
 }

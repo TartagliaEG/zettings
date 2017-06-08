@@ -8,6 +8,7 @@ const simple_logger_1 = require("./utils/simple-logger");
 const vr_reference_1 = require("./value-resolver/vr-reference");
 const type_check_1 = require("./utils/type-check");
 const node_iteration_1 = require("./utils/node-iteration");
+const expression_resolver_1 = require("./utils/expression-resolver");
 const _ = require("lodash");
 const Log = new simple_logger_1.default('Zettings');
 class Zettings {
@@ -29,7 +30,7 @@ class Zettings {
         options.defaultEnvSource = getFirstValid(options.defaultEnvSource, true);
         options.defaultVrReference = getFirstValid(options.defaultVrReference, true);
         options.defaultVrMap = getFirstValid(options.defaultVrMap, true);
-        this.expTokens = getFirstValid(options.expressionTokens, { open: '${', close: '}' });
+        this.expResolver = getFirstValid(options.expressionResolver, new expression_resolver_1.ExpressionResolver());
         let memoPriority = getFirstValid(options.defaultMemoSourcePriority, 1);
         let envPriority = getFirstValid(options.defaultEnvSourcePriority, 5);
         if (options.defaultMemoSource)
@@ -43,8 +44,6 @@ class Zettings {
             map.set('pwd', this.pwd);
             this.addValueResolver(new vr_map_1.default({ map: map }));
         }
-        if (!this.expTokens || !type_check_1.isString(this.expTokens.open) || !type_check_1.isString(this.expTokens.close))
-            throw new Error("Invalid expression tokens. Expected: { open: <string>, close: <string> }, but found: " + JSON.stringify(this.expTokens) + ". ");
     }
     /**
      * Add a ValueResolver to be applied each time the #get function is called.
@@ -148,7 +147,7 @@ class Zettings {
         node_iteration_1.forEachLeaf(value, (leaf, mutate) => {
             let resolvedValue;
             if (typeof leaf === 'string')
-                resolvedValue = this.resolveExpressions(leaf);
+                resolvedValue = this.expResolver.resolve(leaf, this.applyValueResolvers.bind(this));
             else
                 resolvedValue = this.applyValueResolvers(leaf);
             if (type_check_1.isPrimitive(value))
@@ -157,25 +156,6 @@ class Zettings {
                 mutate(resolvedValue);
             return 'CONTINUE_ITERATION';
         });
-        return value;
-    }
-    resolveExpressions(value) {
-        let opnIdx;
-        let clsIdx;
-        let open = this.expTokens.open;
-        let close = this.expTokens.close;
-        let temp;
-        while ((opnIdx = value.lastIndexOf(open)) >= 0) {
-            temp = value.slice(opnIdx + open.length);
-            clsIdx = temp.indexOf(close);
-            if (clsIdx === -1)
-                throw new Error("An openning token was found at col " + opnIdx + " without its closing pair: ('" + value + "'). ");
-            temp = temp.slice(0, clsIdx);
-            temp = this.applyValueResolvers(temp);
-            value = type_check_1.isPrimitive(temp)
-                ? value.substr(0, opnIdx) + temp + value.substr(opnIdx + open.length + clsIdx + 1)
-                : temp;
-        }
         return value;
     }
     /**

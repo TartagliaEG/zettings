@@ -22,9 +22,12 @@ export interface ValueResolver {
   resolve(value: any): any
 }
 
-import Zettings, { ZetExpressionTokens, ZetOptions } from './zettings';
+import Zettings, { ZetOptions } from './zettings';
 export default Zettings;
-export { ZetExpressionTokens, ZetOptions };
+export { ZetOptions };
+
+export { ExpressionResolver, ExpressionTokens } from './utils/expression-resolver';
+
 
 // Sources
 import EnvSource, { EnvDependencies, EnvOptions } from './sources/src-env';
@@ -38,3 +41,4 @@ import VrMap, { MapOptions } from './value-resolver/vr-map';
 import VrReference, { RefOptions } from './value-resolver/vr-reference';
 
 export { VrMap, MapOptions, VrReference, RefOptions };
+

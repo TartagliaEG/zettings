@@ -38,13 +38,9 @@ export interface ZetOptions {
      */
     pwd: string;
     /**
-     * Tokens used to identify expression blocks. Defaults to { open: '${', close: '}' }.
+     * Resolve Expression
      */
-    expressionTokens?: ZetExpressionTokens;
-}
-export interface ZetExpressionTokens {
-    open: string;
-    close: string;
+    expressionResolver?: (value: string, resolveValue: (string) => any) => any;
 }
 export default class Zettings {
     private pwd;
@@ -58,8 +54,8 @@ export default class Zettings {
     private nameKeys;
     /** Stores the number of registered sources */
     private counter;
-    /** Tokens used to identify expression blocks */
-    private expTokens;
+    /** Resolve expressions in configuration values  */
+    private expResolver?;
     /**
      * @see Options
      */
@@ -111,7 +107,6 @@ export default class Zettings {
      */
     toggleSource(name: string): void;
     private resolveValue(value);
-    private resolveExpressions(value);
     /**
      * Iterate over all value resolver and apply those that can handle the value.
      *

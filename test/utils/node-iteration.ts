@@ -8,21 +8,21 @@ setLoggerLevel(LVL_NONE);
 describe("NodeIteration", function() {
   describe('.forEachLeaf', function() {
 
-    it("Assert that the iteration works with objects.", function() {
+    it("Should iterate over objects.", function() {
       const onReachLeaf = spy(() => false);
       forEachLeaf({a:1, b:2, c:3}, onReachLeaf);
       expect(onReachLeaf.calledThrice).to.be.true;
     });
 
 
-    it("Assert that the iteration works with arrays.", function() {
+    it("Should iterate over arrays.", function() {
       const onReachLeaf = spy(() => false);
       forEachLeaf([1, 2, 3], onReachLeaf);
       expect(onReachLeaf.calledThrice).to.be.true;
     });
 
 
-    it("Assert that the iteration works with primitives.", function() {
+    it("Should iterate over primitives.", function() {
       const onReachLeaf = spy(() => false);
       forEachLeaf(1, onReachLeaf);
       forEachLeaf('a', onReachLeaf);
@@ -33,7 +33,7 @@ describe("NodeIteration", function() {
     });
 
 
-    it('Assert that the mutate function changes the value.', function() {
+    it('Should allow value mutation during the iteration.', function() {
       const obj = {a: 1};
 
       forEachLeaf(obj, (leaf, mutate): IterationFlag => {

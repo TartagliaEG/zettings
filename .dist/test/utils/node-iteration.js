@@ -7,17 +7,17 @@ const simple_logger_1 = require("../../src/utils/simple-logger");
 simple_logger_1.setLoggerLevel(simple_logger_1.LVL_NONE);
 describe("NodeIteration", function () {
     describe('.forEachLeaf', function () {
-        it("Assert that the iteration works with objects.", function () {
+        it("Should iterate over objects.", function () {
             const onReachLeaf = sinon_1.spy(() => false);
             node_iteration_1.forEachLeaf({ a: 1, b: 2, c: 3 }, onReachLeaf);
             chai_1.expect(onReachLeaf.calledThrice).to.be.true;
         });
-        it("Assert that the iteration works with arrays.", function () {
+        it("Should iterate over arrays.", function () {
             const onReachLeaf = sinon_1.spy(() => false);
             node_iteration_1.forEachLeaf([1, 2, 3], onReachLeaf);
             chai_1.expect(onReachLeaf.calledThrice).to.be.true;
         });
-        it("Assert that the iteration works with primitives.", function () {
+        it("Should iterate over primitives.", function () {
             const onReachLeaf = sinon_1.spy(() => false);
             node_iteration_1.forEachLeaf(1, onReachLeaf);
             node_iteration_1.forEachLeaf('a', onReachLeaf);
@@ -26,7 +26,7 @@ describe("NodeIteration", function () {
             node_iteration_1.forEachLeaf(null, onReachLeaf);
             chai_1.expect(onReachLeaf.callCount).to.be.equals(5);
         });
-        it('Assert that the mutate function changes the value.', function () {
+        it('Should allow value mutation during the iteration.', function () {
             const obj = { a: 1 };
             node_iteration_1.forEachLeaf(obj, (leaf, mutate) => {
                 mutate(2);

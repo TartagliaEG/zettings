@@ -1,4 +1,4 @@
-import { primitive } from './types';
+import { primitive } from './type-check';
 export declare type IterationFlag = 'CONTINUE_ITERATION' | 'BREAK_ITERATION';
 /**
  * The function called when a leaf is reached.
