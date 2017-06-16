@@ -5,5 +5,5 @@ export interface ExpressionTokens {
 export declare class ExpressionResolver {
     private expTokens;
     constructor(tokens?: ExpressionTokens);
-    resolve(value: any, resolveValue: (any) => any): any;
+    resolve(value: any, resolveValue: (value: any) => any): any;
 }

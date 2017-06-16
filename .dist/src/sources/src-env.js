@@ -1,9 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const simple_logger_1 = require("../utils/simple-logger");
 const text_replacements_1 = require("../utils/text-replacements");
 const node_iteration_1 = require("../utils/node-iteration");
-const Log = new simple_logger_1.default('src-env');
 const SEPARATOR_TEMP = "§§";
 const UPPERCASE_TEMP = "¬¬";
 class EnvSource {

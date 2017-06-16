@@ -7,7 +7,7 @@ class JsonSource {
     constructor(options) {
         this.json = {};
         this.name = options.name || 'JSON';
-        options.pwd = options.pwd === undefined ? '' : options.pwd;
+        options.pwd = options.pwd || '';
         options.pwd = options.pwd === '$HOME' ? OS.homedir() : options.pwd;
         this.paths = options.paths.map(path => Path.join(options.pwd, path));
         this.refresh();

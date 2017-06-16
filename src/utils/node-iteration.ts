@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 
-import { primitive, isObject, isArray, isNumeric } from './type-check';
+import { primitive, isObject, isArray, isNumeric, StrIndexed } from './type-check';
 
 const CIRCULAR_KEY = '___$CIRCULAR';
 
@@ -23,7 +23,7 @@ export type OnReachLeaf = (leaf: primitive, mutate: (newValue: any) => void) => 
  * @see {OnReachLeaf} Return true to stop the iteration
  */
 export function forEachLeaf(node: any, onReachLeaf: OnReachLeaf): void {
-  const circularRefs = [];
+  const circularRefs: any[] = [];
   _forEachLeaf([node], onReachLeaf, circularRefs);
   circularRefs.forEach((item) => { delete item[CIRCULAR_KEY]; });
 }
@@ -36,17 +36,17 @@ export function forEachLeaf(node: any, onReachLeaf: OnReachLeaf): void {
  * @param {OnReachLeaf} onReachLeaf - The function called when the leaf is reached.
  * @param {Array} circularRefs - An array to push all circular references into.
  */
-function _forEachLeaf(node: Array<any> | Object, onReachLeaf: OnReachLeaf, circularRefs: Array<any>): boolean {
+function _forEachLeaf(node: StrIndexed, onReachLeaf: OnReachLeaf, circularRefs: Array<any>): boolean {
   if (node[CIRCULAR_KEY])
-    return;
+    return false;
 
-  let keys = isArray(node) ? { length: node.length } : Object.keys(node);
+  let keys: { length: number, [key: string]: any } = isArray(node) ? { length: node.length } : Object.keys(node);
 
   node[CIRCULAR_KEY] = true;
   circularRefs.push(node);
 
   for (let i = 0; i < keys.length; i++) {
-    let key = keys[i] || i.toString();
+    let key = keys[i.toString()] || i.toString();
     let shouldBreak: boolean;
     const value = node[key];
 

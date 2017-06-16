@@ -4,7 +4,7 @@ import EnvSource from './sources/src-env';
 import MemorySource from './sources/src-memory';
 import Logger from './utils/simple-logger';
 import VrReference from './value-resolver/vr-reference';
-import { isValid, isObject, isArray, isPrimitive, isString } from './utils/type-check';
+import { isValid, isObject, isPrimitive, StrIndexed } from './utils/type-check';
 import { forEachLeaf } from './utils/node-iteration';
 import { Source, ValueResolver } from './types';
 import { ExpressionResolver } from './utils/expression-resolver';
@@ -61,7 +61,7 @@ export interface ZetOptions {
   /**
    * Resolve Expression
    */
-  expressionResolver?: (value: string, resolveValue: (string) => any) => any
+  expressionResolver?: (value: string, resolveValue: (value: string) => any) => any
 }
 
 
@@ -85,7 +85,7 @@ export default class Zettings {
   private lowestPriority: number;
 
   /** Stores the names already used **/
-  private nameKeys: Object = {};
+  private nameKeys: StrIndexed = {};
 
   /** Stores the number of registered sources */
   private counter: number = 0;
@@ -206,7 +206,7 @@ export default class Zettings {
   public getm(key: string, def?: Object): any {
     const keys = key.replace(/]/g, '').split(/[\[.]/g);
     let result: any;
-    let type: string;
+    let type: string = undefined;
 
     for (let i = 0; i < this.sources.length; i++) {
       const prioritySource = this.sources[i];

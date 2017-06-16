@@ -12,7 +12,7 @@ export class ExpressionResolver {
     this.expTokens = tokens || { open: '${', close: '}' }
   }
 
-  public resolve(value: any, resolveValue: (any) => any) {
+  public resolve(value: any, resolveValue: (value: any) => any) {
     let opnIdx: number;
     let clsIdx: number;
 

@@ -1,7 +1,7 @@
 import { expect } from "chai";
-import { stub, spy, SinonStub } from "sinon";
+import { stub } from "sinon";
 import { setLoggerLevel, LVL_NONE } from '../../src/utils/simple-logger';
-import { ExpressionResolver, ExpressionTokens } from '../../src/utils/expression-resolver';
+import { ExpressionResolver } from '../../src/utils/expression-resolver';
 
 setLoggerLevel(LVL_NONE);
 

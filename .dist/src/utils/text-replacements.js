@@ -56,7 +56,7 @@ function escapeRegExp(str) {
  */
 function toUppercase(keys, ucaseToken) {
     const regex = new RegExp('(?=' + escapeRegExp(ucaseToken) + ')');
-    const keysCopy = [].concat(keys);
+    const keysCopy = keys.slice();
     for (let i = 0; i < keysCopy.length; i++) {
         if (keysCopy[i].indexOf(ucaseToken) === -1)
             continue;
@@ -86,7 +86,7 @@ exports.toUppercase = toUppercase;
  */
 function replaceAll(keys, token, replaceBy) {
     keys = Array.isArray(keys) ? keys : [keys];
-    const keysCopy = [].concat(keys);
+    const keysCopy = keys.slice();
     const regex = new RegExp(escapeRegExp(token), 'g');
     for (let i = 0; i < keysCopy.length; i++) {
         keysCopy[i] = keysCopy[i].replace(regex, replaceBy);

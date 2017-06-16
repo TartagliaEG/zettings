@@ -69,7 +69,7 @@ function escapeRegExp(str: string) {
  */
 export function toUppercase(keys: string[], ucaseToken: string): string[] {
   const regex = new RegExp('(?=' + escapeRegExp(ucaseToken) + ')');
-  const keysCopy = [].concat(keys);
+  const keysCopy: string[] = keys.slice();
 
   for (let i = 0; i < keysCopy.length; i++) {
     if (keysCopy[i].indexOf(ucaseToken) === -1)
@@ -108,7 +108,7 @@ export function replaceAll(text: string[], token: string, replace: string): stri
  */
 export function replaceAll(keys: string | string[], token: string, replaceBy: string): string[] {
   keys = Array.isArray(keys) ? keys : [keys];
-  const keysCopy = [].concat(keys);
+  const keysCopy = keys.slice();
   const regex = new RegExp(escapeRegExp(token), 'g');
 
   for (let i = 0; i < keysCopy.length; i++) {

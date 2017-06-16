@@ -21,7 +21,13 @@ module.exports = function(grunt) {
         sourceMaps: true,
         outFile: '.dist/src/zettings.js',
         declaration: true,
-        removeComments: false
+        removeComments: false,
+        noImplicitAny: true,
+        noUnusedLocals: true,
+        noUnusedParameters: true,
+        noImplicitReturns: true,
+        noImplicitThis: true,
+        alwaysStrict: true
       },
       fullCompile:  { src: ['./{src,test}/**/*.ts'], outDir: '.dist/', options: { fast: 'never'  } },
 

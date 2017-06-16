@@ -95,7 +95,7 @@ class Zettings {
     getm(key, def) {
         const keys = key.replace(/]/g, '').split(/[\[.]/g);
         let result;
-        let type;
+        let type = undefined;
         for (let i = 0; i < this.sources.length; i++) {
             const prioritySource = this.sources[i];
             const source = prioritySource.source;

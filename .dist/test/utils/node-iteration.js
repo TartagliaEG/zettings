@@ -28,7 +28,7 @@ describe("NodeIteration", function () {
         });
         it('Should allow value mutation during the iteration.', function () {
             const obj = { a: 1 };
-            node_iteration_1.forEachLeaf(obj, (leaf, mutate) => {
+            node_iteration_1.forEachLeaf(obj, (_leaf, mutate) => {
                 mutate(2);
                 return 'CONTINUE_ITERATION';
             });
@@ -41,7 +41,7 @@ describe("NodeIteration", function () {
             chai_1.expect(onReachLeaf.calledTwice).to.be.false;
         });
         it('Should reach in deeply nested values.', function () {
-            const onReachLeaf = sinon_1.spy((v) => false);
+            const onReachLeaf = sinon_1.spy(() => false);
             const deepObj = { level1: { level2: [{ level3: { key1: 'value1', key2: 'value2' } }, 'value3'] } };
             node_iteration_1.forEachLeaf(deepObj, onReachLeaf);
             chai_1.expect(onReachLeaf.calledThrice).to.be.true;

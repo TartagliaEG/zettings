@@ -1,5 +1,4 @@
 import { expect } from "chai";
-import { stub, spy, SinonStub } from "sinon";
 import VrReference from "../../src/value-resolver/vr-reference";
 import { setLoggerLevel, LVL_NONE } from '../../src/utils/simple-logger';
 

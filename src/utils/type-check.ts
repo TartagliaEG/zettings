@@ -1,6 +1,7 @@
 const isArray = Array.isArray
 
 export type primitive = number | string | null | undefined | boolean;
+export type StrIndexed = {[key: string]: any};
 
 export function isNumeric(value: any): boolean {
   return !isNaN(parseFloat(value)) && isFinite(value);

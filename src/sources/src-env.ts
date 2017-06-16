@@ -1,9 +1,6 @@
 import { Source } from '../types';
-import Logger from '../utils/simple-logger';
-import { safeReplace, toUppercase, replaceAll } from '../utils/text-replacements';
+import { safeReplace, toUppercase } from '../utils/text-replacements';
 import { toLeaf } from '../utils/node-iteration';
-
-const Log = new Logger('src-env');
 
 const SEPARATOR_TEMP = "§§";
 const UPPERCASE_TEMP = "¬¬";

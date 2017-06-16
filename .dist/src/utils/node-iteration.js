@@ -25,12 +25,12 @@ exports.forEachLeaf = forEachLeaf;
  */
 function _forEachLeaf(node, onReachLeaf, circularRefs) {
     if (node[CIRCULAR_KEY])
-        return;
+        return false;
     let keys = type_check_1.isArray(node) ? { length: node.length } : Object.keys(node);
     node[CIRCULAR_KEY] = true;
     circularRefs.push(node);
     for (let i = 0; i < keys.length; i++) {
-        let key = keys[i] || i.toString();
+        let key = keys[i.toString()] || i.toString();
         let shouldBreak;
         const value = node[key];
         if (type_check_1.isObject(value) || type_check_1.isArray(value))

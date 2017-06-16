@@ -12,6 +12,6 @@ export interface JsonOptions {
     name?: string;
     /** Specifies a list of json locations to be merged. **/
     paths: string[];
-    /** Specifies the working directory from which the paths will be relative to **/
-    pwd?: string | '$HOME';
+    /** Specifies the working directory from which the paths will be relative to. The string '$HOME' points to the current user's directory **/
+    pwd?: string;
 }

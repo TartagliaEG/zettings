@@ -1,7 +1,7 @@
 import { expect } from "chai";
-import { stub, spy, SinonStub } from "sinon";
+import { stub, spy } from "sinon";
 import Zettings from "../src/zettings";
-import { ZetOptions, Source } from "../src/types";
+import { Source } from "../src/types";
 import { setLoggerLevel, LVL_NONE } from '../src/utils/simple-logger';
 
 setLoggerLevel(LVL_NONE);
@@ -12,7 +12,7 @@ describe("Zettings", function () {
   describe(".addSource", function () {
     it("Should ensure that the name and priority pair are  source names are unique.", function () {
       const Z = new Zettings(pwd);
-      const fakeSource: Source = { get: (key: string[]): any => { return 1; }, name: "mock" };
+      const fakeSource: Source = { get: (): any => { return 1; }, name: "mock" };
 
       Z.addSource(fakeSource);
       expect(() => { Z.addSource(fakeSource) }).to.throw(Error);
@@ -24,9 +24,9 @@ describe("Zettings", function () {
     it("Should return the number of registered sources.", function () {
       const Z = new Zettings(pwd);
       const count = Z.count();
-      const mock1: Source = { name: "1", get: (a: string[]) => null };
-      const mock2: Source = { name: "2", get: (a: string[]) => null };
-      const mock3: Source = { name: "3", get: (a: string[]) => null };
+      const mock1: Source = { name: "1", get: () => null };
+      const mock2: Source = { name: "2", get: () => null };
+      const mock3: Source = { name: "3", get: () => null };
 
       expect(Z.count()).to.be.equals(count);
 
@@ -53,7 +53,7 @@ describe("Zettings", function () {
   describe(".getm", function () {
     it("Should call the source's get method with the split keys as arguments.", function () {
       const Z = new Zettings(pwd);
-      const mock: Source = { get: (key: string[]): any => { return 1; }, name: "mock" };
+      const mock: Source = { get: (): any => { return 1; }, name: "mock" };
 
       const spGet = spy(mock, "get");
 
@@ -74,9 +74,9 @@ describe("Zettings", function () {
 
     it("Should calls the source with highest priority first.", function () {
       const Z = new Zettings(pwd);
-      const mock1: Source = { name: "1", get: (a: string[]) => "one" };
-      const mock2: Source = { name: "2", get: (a: string[]) => "two" };
-      const mock3: Source = { name: "3", get: (a: string[]) => "three" };
+      const mock1: Source = { name: "1", get: () => "one" };
+      const mock2: Source = { name: "2", get: () => "two" };
+      const mock3: Source = { name: "3", get: () => "three" };
 
       Z.addSource(mock1, 10);
       expect(Z.getm("a")).to.be.equals("one");
@@ -98,9 +98,9 @@ describe("Zettings", function () {
 
     it("Should ignore disabled sources.", function () {
       const Z = new Zettings({ pwd: '', defaultEnvSource: false, defaultMemoSource: false });
-      const mock1: Source = { name: "1", get: (a: string[]) => "one" };
-      const mock2: Source = { name: "2", get: (a: string[]) => "two" };
-      const mock3: Source = { name: "3", get: (a: string[]) => "three" };
+      const mock1: Source = { name: "1", get: () => "one" };
+      const mock2: Source = { name: "2", get: () => "two" };
+      const mock3: Source = { name: "3", get: () => "three" };
 
       Z.addSource(mock1, 1);
       Z.addSource(mock2, 2);
@@ -124,9 +124,9 @@ describe("Zettings", function () {
 
     it("Should merge objects from multiple sources.", function () {
       const Z = new Zettings(pwd);
-      const mock1: Source = { name: "1", get: (a: string[]) => { return { 'key1': 'a' } } };
-      const mock2: Source = { name: "2", get: (a: string[]) => { return { 'key2': 'b' } } };
-      const mock3: Source = { name: "3", get: (a: string[]) => { return { 'key3': 'c' } } };
+      const mock1: Source = { name: "1", get: () => { return { 'key1': 'a' } } };
+      const mock2: Source = { name: "2", get: () => { return { 'key2': 'b' } } };
+      const mock3: Source = { name: "3", get: () => { return { 'key3': 'c' } } };
 
       Z.addSource(mock1);
       Z.addSource(mock2);
@@ -138,9 +138,9 @@ describe("Zettings", function () {
 
     it("Should merge sources based on its priority.", function () {
       const Z = new Zettings(pwd);
-      const mock1: Source = { name: "1", get: (a: string[]) => { return { 'key1': 'a' } } };
-      const mock2: Source = { name: "2", get: (a: string[]) => { return { 'key1': 'b' } } };
-      const mock3: Source = { name: "3", get: (a: string[]) => { return { 'key1': 'c' } } };
+      const mock1: Source = { name: "1", get: () => { return { 'key1': 'a' } } };
+      const mock2: Source = { name: "2", get: () => { return { 'key1': 'b' } } };
+      const mock3: Source = { name: "3", get: () => { return { 'key1': 'c' } } };
 
       Z.addSource(mock1, 11);
       Z.addSource(mock2, 10);
@@ -152,8 +152,8 @@ describe("Zettings", function () {
 
     it("Should merge only objects.", function () {
       const Z = new Zettings(pwd);
-      const mock1: Source = { name: "1", get: (a: string[]) => { return { 'key1': 'a' } } };
-      const mock2: Source = { name: "2", get: (a: string[]) => 'non-object' };
+      const mock1: Source = { name: "1", get: () => { return { 'key1': 'a' } } };
+      const mock2: Source = { name: "2", get: () => 'non-object' };
 
       Z.addSource(mock1, 11);
       Z.addSource(mock2, 12);
@@ -164,9 +164,12 @@ describe("Zettings", function () {
 
     it("Shouldn't query other sources when the first one has returned a non-mergeable value already.", function () {
       const Z = new Zettings(pwd);
-      const get = spy((a: string[]) => 'non-object');
-      const mock1: Source = { name: "1", get: (a: string[]) => 'first-value' };
+      const get = spy(() => 'non-object');
+      const mock1: Source = { name: "1", get: () => 'first-value' };
       const mock2: Source = { name: "2", get: get };
+
+      Z.addSource(mock1);
+      Z.addSource(mock2);
 
       Z.getm('a');
 

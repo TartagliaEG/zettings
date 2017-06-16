@@ -40,7 +40,7 @@ export interface ZetOptions {
     /**
      * Resolve Expression
      */
-    expressionResolver?: (value: string, resolveValue: (string) => any) => any;
+    expressionResolver?: (value: string, resolveValue: (value: string) => any) => any;
 }
 export default class Zettings {
     private pwd;
